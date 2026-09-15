@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Digital Khata - Udhaar & Payment Management</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Main Mobile Outer Frame (Centering container for Desktop view) -->
+  <div class="app-viewport">
+    <div class="app-container">
+
+      <!-- ========================================== -->
+      <!-- SPLASH SCREEN -->
+      <!-- ========================================== -->
+      <div id="splash-screen" class="splash-screen">
+        <div class="splash-background-shapes">
+          <div class="splash-blob blob-1"></div>
+          <div class="splash-blob blob-2"></div>
+        </div>
+        <div class="splash-content">
+          <div class="splash-logo-wrapper">
+            <div class="splash-glow"></div>
+            <img src="digital-khata-logo.svg" alt="Digital Khata" class="splash-logo">
+          </div>
+          <h1 class="splash-title">Digital Khata</h1>
+          <p class="splash-subtitle">Udhaar & Payment Management</p>
+          <div class="splash-loader">
+            <div class="splash-progress"></div>
+          </div>
+        </div>
+        <div class="splash-footer">
+          <span class="splash-footer-text">100% Safe & Secure Khata</span>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- SCREEN 1: WELCOME / ONBOARDING -->
+      <!-- ========================================== -->
+      <section id="screen-welcome" class="screen active">
+        <!-- Decorative Pastel Shapes -->
+        <div class="pastel-shape shape-top-right"></div>
+        <div class="pastel-shape shape-bottom-left"></div>
+        <div class="pastel-shape shape-diamond"></div>
+
+        <div class="welcome-content">
+          <div class="welcome-logo-wrapper">
+            <img src="digital-khata-logo.svg" alt="Digital Khata Logo" class="welcome-logo">
+          </div>
+          <h1 class="welcome-title">Digital Khata</h1>
+          <p class="welcome-subtitle">Manage your customers and payments</p>
+          <button id="btn-get-started" class="btn btn-primary btn-block btn-lg">Get Started</button>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SCREEN 2: DASHBOARD / HOME -->
+      <!-- ========================================== -->
+      <section id="screen-dashboard" class="screen">
+        <header class="app-header">
+          <div class="header-titles">
+            <h1 class="header-brand">Digital Khata</h1>
+            <p class="header-subtitle">Manage your customers and payments</p>
+          </div>
+          <button class="btn-icon" id="btn-header-settings" title="Settings">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/>
+              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+            </svg>
+          </button>
+        </header>
+
+        <div class="screen-body">
+          <!-- Summary Cards Row -->
+          <div class="summary-cards-row">
+            <!-- Total Udhaar Card (Purple Tint) -->
+            <div class="summary-card card-purple">
+              <div class="card-icon-badge badge-purple">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="12" y1="19" x2="12" y2="5"/>
+                  <polyline points="5 12 12 5 19 12"/>
+                </svg>
+              </div>
+              <span class="card-label">Total Udhaar</span>
+              <span class="card-amount" id="dash-total-udhaar">Rs. 0</span>
+            </div>
+
+            <!-- Total Received Card (Green Tint) -->
+            <div class="summary-card card-green">
+              <div class="card-icon-badge badge-green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19"/>
+                  <polyline points="19 12 12 19 5 12"/>
+                </svg>
+              </div>
+              <span class="card-label">Total Received</span>
+              <span class="card-amount" id="dash-total-received">Rs. 0</span>
+            </div>
+
+            <!-- Remaining Card (Yellow Tint) -->
+            <div class="summary-card card-yellow">
+              <div class="card-icon-badge badge-yellow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <rect x="2" y="6" width="20" height="12" rx="3"/>
+                  <circle cx="16" cy="12" r="1.5"/>
+                  <path d="M6 6v12"/>
+                </svg>
+              </div>
+              <span class="card-label">Remaining</span>
+              <span class="card-amount" id="dash-remaining">Rs. 0</span>
+            </div>
+          </div>
+
+          <!-- Search Bar -->
+          <div class="search-box">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" id="dash-search-input" placeholder="Search customer...">
+          </div>
+
+          <!-- Customers List or Empty State -->
+          <div id="dash-customers-container">
+            <!-- Empty State -->
+            <div id="dash-empty-state" class="empty-state">
+              <div class="empty-icon-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                  <circle cx="8.5" cy="7" r="4"/>
+                  <polyline points="17 11 19 13 23 9"/>
+                </svg>
+              </div>
+              <h3 class="empty-title">No customers yet</h3>
+              <p class="empty-subtitle">Add your first customer to get started with your khata.</p>
+              <button class="btn btn-primary btn-add-cust-trigger">+ Add Customer</button>
+            </div>
+
+            <!-- Active Customers List -->
+            <div id="dash-customer-list" class="customer-list hidden"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SCREEN 3: CUSTOMERS -->
+      <!-- ========================================== -->
+      <section id="screen-customers" class="screen">
+        <header class="app-header">
+          <h1 class="header-title">Customers</h1>
+          <button class="btn-icon" id="btn-customers-filter-icon" title="Filter">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+            </svg>
+          </button>
+        </header>
+
+        <div class="screen-body">
+          <!-- Search input -->
+          <div class="search-box">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" id="cust-search-input" placeholder="Search customers...">
+          </div>
+
+          <!-- Filter Tabs -->
+          <div class="filter-chips">
+            <button class="chip active" data-filter="all">All</button>
+            <button class="chip" data-filter="due">Due</button>
+            <button class="chip" data-filter="paid">Paid</button>
+          </div>
+
+          <!-- Container -->
+          <div id="cust-list-container">
+            <!-- Empty state -->
+            <div id="cust-empty-state" class="empty-state">
+              <div class="empty-icon-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 010 7.75"/>
+                </svg>
+              </div>
+              <h3 class="empty-title">No customers found</h3>
+              <p class="empty-subtitle">Add your first customer to start managing your khata.</p>
+              <button class="btn btn-primary btn-add-cust-trigger">+ Add Customer</button>
+            </div>
+
+            <!-- List -->
+            <div id="cust-cards-list" class="customer-list hidden"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SCREEN 4: ADD CUSTOMER -->
+      <!-- ========================================== -->
+      <section id="screen-add-customer" class="screen">
+        <header class="app-header sub-header">
+          <button class="btn-icon btn-back" title="Back">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="19" y1="12" x2="5" y2="12"/>
+              <polyline points="12 19 5 12 12 5"/>
+            </svg>
+          </button>
+          <h1 class="header-title">Add Customer</h1>
+          <div class="header-placeholder"></div>
+        </header>
+
+        <div class="screen-body">
+          <form id="form-add-customer" class="app-form" novalidate>
+            <div class="form-group">
+              <label for="cust-name">Customer Name</label>
+              <input type="text" id="cust-name" placeholder="Enter customer name" required>
+              <span class="field-error" id="err-cust-name"></span>
+            </div>
+
+            <div class="form-group">
+              <label for="cust-phone">Phone Number</label>
+              <input type="tel" id="cust-phone" placeholder="03XX-XXXXXXX" required>
+              <span class="field-error" id="err-cust-phone"></span>
+            </div>
+
+            <div class="form-group">
+              <label for="cust-address">Address <span class="label-optional">(Optional)</span></label>
+              <textarea id="cust-address" rows="3" placeholder="Enter address"></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary btn-block btn-lg">Save Customer</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SCREEN 5: CUSTOMER DETAILS / KHATA -->
+      <!-- ========================================== -->
+      <section id="screen-customer-details" class="screen">
+        <header class="app-header sub-header">
+          <button class="btn-icon btn-back" title="Back">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="19" y1="12" x2="5" y2="12"/>
+              <polyline points="12 19 5 12 12 5"/>
+            </svg>
+          </button>
+          <div class="header-placeholder"></div>
+          <button class="btn-icon" id="btn-cust-menu" title="Menu">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <circle cx="12" cy="5" r="1.5"/>
+              <circle cx="12" cy="12" r="1.5"/>
+              <circle cx="12" cy="19" r="1.5"/>
+            </svg>
+          </button>
+        </header>
+
+        <div class="screen-body">
+          <!-- Profile Card -->
+          <div class="customer-profile-card">
+            <div class="cust-avatar-large">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+            <h2 id="detail-cust-name" class="detail-cust-name">Customer Name</h2>
+            <p id="detail-cust-phone" class="detail-cust-phone">03XX-XXXXXXX</p>
+            <p id="detail-cust-address" class="detail-cust-address"></p>
+          </div>
+
+          <!-- Large Remaining Balance Card -->
+          <div class="balance-banner-card">
+            <div class="balance-banner-header">
+              <div class="balance-banner-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="6" width="20" height="12" rx="3"/>
+                  <circle cx="16" cy="12" r="1.5"/>
+                </svg>
+              </div>
+              <span class="balance-banner-label">Remaining</span>
+            </div>
+            <div class="balance-banner-amount" id="detail-cust-balance">Rs. 0</div>
+          </div>
+
+          <!-- Two Large Action Buttons -->
+          <div class="cust-action-buttons">
+            <button id="btn-add-udhaar" class="btn btn-purple btn-block">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              + Add Udhaar
+            </button>
+            <button id="btn-receive-payment" class="btn btn-emerald btn-block">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              Receive Payment
+            </button>
+          </div>
+
+          <!-- Transaction History Section -->
+          <div class="history-section">
+            <div class="section-title-row">
+              <svg class="title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
+              </svg>
+              <h3>Transaction History</h3>
+            </div>
+
+            <!-- Empty History State -->
+            <div id="tx-empty-state" class="empty-state">
+              <div class="empty-icon-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <circle cx="12" cy="14" r="3"/>
+                  <path d="M12 12v2l1 1"/>
+                </svg>
+              </div>
+              <h3 class="empty-title">No transactions yet</h3>
+              <p class="empty-subtitle">Add udhaar or payment to see history here.</p>
+            </div>
+
+            <!-- History List -->
+            <div id="tx-history-list" class="tx-list hidden"></div>
+          </div>
+        </div>
+
+        <!-- Sticky WhatsApp Reminder Bottom Bar -->
+        <div class="whatsapp-sticky-footer">
+          <button id="btn-whatsapp-reminder" class="btn btn-whatsapp btn-block">
+            <svg class="whatsapp-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-1.149 4.197 4.292-1.126z"/>
+            </svg>
+            WhatsApp Reminder
+          </button>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SCREEN 6: ADD UDHAAR -->
+      <!-- ========================================== -->
+      <section id="screen-add-udhaar" class="screen">
+        <header class="app-header sub-header">
+          <button class="btn-icon btn-back" title="Back">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="19" y1="12" x2="5" y2="12"/>
+              <polyline points="12 19 5 12 12 5"/>
+            </svg>
+          </button>
+          <h1 class="header-title">Add Udhaar</h1>
+          <div class="header-placeholder"></div>
+        </header>
+
+        <div class="screen-body">
+          <form id="form-add-udhaar" class="app-form" novalidate>
+            <div class="form-group">
+              <label for="udhaar-amount">Amount</label>
+              <div class="input-currency-wrapper">
+                <input type="number" id="udhaar-amount" placeholder="Enter amount" min="1" step="any" required>
+                <span class="currency-tag">Rs.</span>
+              </div>
+              <span class="field-error" id="err-udhaar-amount"></span>
+            </div>
+
+            <div class="form-group">
+              <label for="udhaar-desc">Description</label>
+              <input type="text" id="udhaar-desc" placeholder="What was purchased?">
+            </div>
+
+            <div class="form-group">
+              <label for="udhaar-date">Date</label>
+              <input type="date" id="udhaar-date" required>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary btn-block btn-lg">Save Udhaar</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SCREEN 7: RECEIVE PAYMENT -->
+      <!-- ========================================== -->
+      <section id="screen-receive-payment" class="screen">
+        <header class="app-header sub-header">
+          <button class="btn-icon btn-back" title="Back">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="19" y1="12" x2="5" y2="12"/>
+              <polyline points="12 19 5 12 12 5"/>
+            </svg>
+          </button>
+          <h1 class="header-title">Receive Payment</h1>
+          <div class="header-placeholder"></div>
+        </header>
+
+        <div class="screen-body">
+          <form id="form-receive-payment" class="app-form" novalidate>
+            <div class="form-group">
+              <label for="payment-amount">Payment Amount</label>
+              <div class="input-currency-wrapper">
+                <input type="number" id="payment-amount" placeholder="Enter amount" min="1" step="any" required>
+                <span class="currency-tag">Rs.</span>
+              </div>
+              <span class="field-error" id="err-payment-amount"></span>
+            </div>
+
+            <div class="form-group">
+              <label for="payment-note">Note <span class="label-optional">(Optional)</span></label>
+              <textarea id="payment-note" rows="2" placeholder="Add note..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="payment-date">Date</label>
+              <input type="date" id="payment-date" required>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary btn-block btn-lg">Save Payment</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SCREEN 8: REPORTS -->
+      <!-- ========================================== -->
+      <section id="screen-reports" class="screen">
+        <header class="app-header">
+          <h1 class="header-title">Reports</h1>
+          <button class="btn-icon" id="btn-reports-cal-icon" title="Filter Date">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </button>
+        </header>
+
+        <div class="screen-body">
+          <!-- Timeframe Chips -->
+          <div class="filter-chips">
+            <button class="chip active" data-report-time="today">Today</button>
+            <button class="chip" data-report-time="week">This Week</button>
+            <button class="chip" data-report-time="month">This Month</button>
+            <button class="chip" data-report-time="all">All Time</button>
+          </div>
+
+          <!-- Summary Cards Row -->
+          <div class="summary-cards-row mt-3">
+            <div class="summary-card card-purple">
+              <span class="card-label">Total Udhaar</span>
+              <span class="card-amount" id="rep-total-udhaar">Rs. 0</span>
+            </div>
+
+            <div class="summary-card card-green">
+              <span class="card-label">Total Received</span>
+              <span class="card-amount" id="rep-total-received">Rs. 0</span>
+            </div>
+
+            <div class="summary-card card-yellow">
+              <span class="card-label">Remaining</span>
+              <span class="card-amount" id="rep-remaining">Rs. 0</span>
+            </div>
+          </div>
+
+          <!-- Chart / Visual Container -->
+          <div class="report-content-box mt-4">
+            <!-- Empty state -->
+            <div id="rep-empty-state" class="empty-state">
+              <div class="empty-icon-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <line x1="18" y1="20" x2="18" y2="10"/>
+                  <line x1="12" y1="20" x2="12" y2="4"/>
+                  <line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+              </div>
+              <h3 class="empty-title">No data available</h3>
+              <p class="empty-subtitle">Start adding transactions to see your reports here.</p>
+            </div>
+
+            <!-- Visual Bar Comparison Chart -->
+            <div id="rep-chart-wrapper" class="report-chart-card hidden">
+              <h3 class="chart-card-title">Udhaar vs Payment Comparison</h3>
+              <div class="chart-bars-container">
+                <div class="chart-bar-group">
+                  <div class="bar-fill bar-udhaar" id="bar-udhaar-fill" style="height: 0%;"></div>
+                  <span class="bar-label">Udhaar</span>
+                </div>
+                <div class="chart-bar-group">
+                  <div class="bar-fill bar-received" id="bar-received-fill" style="height: 0%;"></div>
+                  <span class="bar-label">Received</span>
+                </div>
+              </div>
+              <div class="chart-legend">
+                <div class="legend-item"><span class="dot dot-purple"></span> Total Udhaar</div>
+                <div class="legend-item"><span class="dot dot-green"></span> Total Received</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SCREEN 9: SETTINGS -->
+      <!-- ========================================== -->
+      <section id="screen-settings" class="screen">
+        <header class="app-header">
+          <h1 class="header-title">Settings</h1>
+        </header>
+
+        <div class="screen-body">
+          <!-- Business Section -->
+          <div class="settings-section">
+            <div class="settings-section-header">
+              <svg class="sec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <span>Business</span>
+            </div>
+            <div class="settings-card">
+              <div class="setting-item clickable" id="item-edit-business">
+                <div class="item-info">
+                  <span class="item-label">Business Name</span>
+                  <span class="item-value" id="set-biz-name">Your Business Name</span>
+                </div>
+                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+              <div class="setting-item clickable" id="item-edit-phone">
+                <div class="item-info">
+                  <span class="item-label">Phone Number</span>
+                  <span class="item-value" id="set-biz-phone">03XX-XXXXXXX</span>
+                </div>
+                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+              <div class="setting-item clickable" id="item-edit-address">
+                <div class="item-info">
+                  <span class="item-label">Address</span>
+                  <span class="item-value" id="set-biz-address">Your Address</span>
+                </div>
+                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Appearance Section -->
+          <div class="settings-section">
+            <div class="settings-section-header">
+              <svg class="sec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="5"/>
+                <line x1="12" y1="1" x2="12" y2="3"/>
+                <line x1="12" y1="21" x2="12" y2="23"/>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                <line x1="1" y1="12" x2="3" y2="12"/>
+                <line x1="21" y1="12" x2="23" y2="12"/>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+              </svg>
+              <span>Appearance</span>
+            </div>
+            <div class="settings-card">
+              <div class="setting-item">
+                <div class="item-info">
+                  <span class="item-label">Light Theme</span>
+                </div>
+                <input type="radio" name="theme-choice" checked disabled class="radio-custom">
+              </div>
+              <div class="setting-item opacity-50">
+                <div class="item-info">
+                  <span class="item-label">Dark Theme</span>
+                </div>
+                <input type="radio" name="theme-choice" disabled class="radio-custom">
+              </div>
+            </div>
+          </div>
+
+          <!-- Data Section -->
+          <div class="settings-section">
+            <div class="settings-section-header">
+              <svg class="sec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+              </svg>
+              <span>Data</span>
+            </div>
+            <div class="settings-card">
+              <div class="setting-item clickable" id="item-export-data">
+                <div class="item-info">
+                  <span class="item-label">Export Data</span>
+                </div>
+                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+              <div class="setting-item clickable item-danger" id="item-clear-data">
+                <div class="item-info">
+                  <span class="item-label text-danger">Clear All Data</span>
+                </div>
+                <svg class="chevron text-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- About Section -->
+          <div class="settings-section">
+            <div class="settings-section-header">
+              <svg class="sec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+              <span>About</span>
+            </div>
+            <div class="settings-card">
+              <div class="setting-item">
+                <div class="item-info">
+                  <span class="item-label">App Version</span>
+                </div>
+                <span class="item-value-muted">1.0.0</span>
+              </div>
+              <div class="setting-item clickable" id="item-about-app">
+                <div class="item-info">
+                  <span class="item-label">About Digital Khata</span>
+                </div>
+                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- FLOATING BOTTOM NAVIGATION BAR -->
+      <!-- ========================================== -->
+      <nav id="bottom-nav" class="bottom-nav hidden">
+        <button class="nav-item active" data-target-screen="screen-dashboard">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          <span class="nav-label">Home</span>
+        </button>
+
+        <button class="nav-item" data-target-screen="screen-customers">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+            <path d="M16 3.13a4 4 0 010 7.75"/>
+          </svg>
+          <span class="nav-label">Customers</span>
+        </button>
+
+        <!-- Raised Center Action Button -->
+        <div class="nav-center-wrapper">
+          <button id="btn-fab-center" class="fab-center" title="Add New Action">
+            <svg class="fab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </button>
+        </div>
+
+        <button class="nav-item" data-target-screen="screen-reports">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+          <span class="nav-label">Reports</span>
+        </button>
+
+        <button class="nav-item" data-target-screen="screen-settings">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+          </svg>
+          <span class="nav-label">Settings</span>
+        </button>
+      </nav>
+
+      <!-- ========================================== -->
+      <!-- MODALS & ACTION SHEETS -->
+      <!-- ========================================== -->
+
+      <!-- Center (+) Action Sheet Popup -->
+      <div id="modal-action-sheet" class="modal-backdrop hidden">
+        <div class="action-sheet-content">
+          <div class="sheet-handle"></div>
+          <h3 class="sheet-title">Quick Actions</h3>
+          <div class="sheet-actions-list">
+            <button id="act-add-customer" class="sheet-btn">
+              <div class="sheet-btn-icon icon-teal">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                  <circle cx="8.5" cy="7" r="4"/>
+                  <line x1="20" y1="8" x2="20" y2="14"/>
+                  <line x1="17" y1="11" x2="23" y2="11"/>
+                </svg>
+              </div>
+              <span>Add Customer</span>
+            </button>
+
+            <button id="act-add-udhaar" class="sheet-btn">
+              <div class="sheet-btn-icon icon-purple">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"/>
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+              </div>
+              <span>Add Udhaar</span>
+            </button>
+
+            <button id="act-receive-payment" class="sheet-btn">
+              <div class="sheet-btn-icon icon-emerald">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+              <span>Receive Payment</span>
+            </button>
+          </div>
+          <button id="btn-close-action-sheet" class="btn btn-secondary btn-block mt-3">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Select Customer Picker Modal (For quick Udhaar/Payment when not in Customer details) -->
+      <div id="modal-select-customer" class="modal-backdrop hidden">
+        <div class="modal-card">
+          <div class="modal-header">
+            <h3 id="select-cust-modal-title" class="modal-title">Select Customer</h3>
+            <button class="btn-icon btn-close-modal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="search-box mb-3">
+              <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input type="text" id="select-cust-search" placeholder="Search customer...">
+            </div>
+            <div id="select-cust-list" class="customer-picker-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Business Modal -->
+      <div id="modal-edit-business" class="modal-backdrop hidden">
+        <div class="modal-card">
+          <div class="modal-header">
+            <h3 class="modal-title">Business Information</h3>
+            <button class="btn-icon btn-close-modal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <form id="form-edit-business" class="app-form" novalidate>
+              <div class="form-group">
+                <label for="input-biz-name">Business Name</label>
+                <input type="text" id="input-biz-name" placeholder="Enter business name" required>
+              </div>
+              <div class="form-group">
+                <label for="input-biz-phone">Phone Number</label>
+                <input type="tel" id="input-biz-phone" placeholder="03XX-XXXXXXX">
+              </div>
+              <div class="form-group">
+                <label for="input-biz-address">Address</label>
+                <textarea id="input-biz-address" rows="2" placeholder="Enter address"></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary btn-block">Save Business Info</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clear All Data Confirmation Modal -->
+      <div id="modal-clear-confirm" class="modal-backdrop hidden">
+        <div class="modal-card text-center">
+          <div class="confirm-icon-danger">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+          <h3 class="modal-title mb-1">Are you sure?</h3>
+          <p class="modal-text text-muted mb-4">This will permanently delete all customers and transactions.</p>
+          <div class="modal-grid-actions">
+            <button id="btn-cancel-clear" class="btn btn-secondary btn-block">Cancel</button>
+            <button id="btn-confirm-clear" class="btn btn-danger btn-block">Delete All</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customer Menu Action Sheet (Edit / Delete Customer) -->
+      <div id="modal-cust-options" class="modal-backdrop hidden">
+        <div class="action-sheet-content">
+          <div class="sheet-handle"></div>
+          <h3 class="sheet-title" id="cust-menu-title">Customer Options</h3>
+          <div class="sheet-actions-list">
+            <button id="opt-edit-customer" class="sheet-btn">
+              <div class="sheet-btn-icon icon-teal">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </div>
+              <span>Edit Customer Details</span>
+            </button>
+            <button id="opt-delete-customer" class="sheet-btn">
+              <div class="sheet-btn-icon icon-danger">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                </svg>
+              </div>
+              <span class="text-danger">Delete Customer</span>
+            </button>
+          </div>
+          <button id="btn-close-cust-options" class="btn btn-secondary btn-block mt-3">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Toast Notification Container -->
+      <div id="toast-container" class="toast-container"></div>
+
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
