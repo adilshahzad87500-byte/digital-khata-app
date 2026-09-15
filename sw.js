@@ -1,5 +1,5 @@
 /* Digital Khata Service Worker */
-const CACHE_NAME = 'digital-khata-v1.1';
+const CACHE_NAME = 'digital-khata-v1.2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

@@ -11,7 +11,8 @@
     BUSINESS: 'digital_khata_business',
     CUSTOMERS: 'digital_khata_customers',
     TRANSACTIONS: 'digital_khata_transactions',
-    SHADOW_BACKUP: 'digital_khata_shadow_backup'
+    SHADOW_BACKUP: 'digital_khata_shadow_backup',
+    THEME: 'digital_khata_theme'
   };
 
   // --- PWA INSTALLATION CONTROLLER ---
@@ -104,6 +105,8 @@
           }));
         }
       }
+      const storedTheme = localStorage.getItem(STORAGE_KEYS.THEME);
+      if (storedTheme) appState.theme = storedTheme;
     } catch (e) {
       console.error('Data loading error! Attempting shadow recovery...', e);
       recoverFromShadowBackup();
@@ -116,6 +119,7 @@
       localStorage.setItem(STORAGE_KEYS.BUSINESS, JSON.stringify(appState.business));
       localStorage.setItem(STORAGE_KEYS.CUSTOMERS, JSON.stringify(appState.customers));
       localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(appState.transactions));
+      localStorage.setItem(STORAGE_KEYS.THEME, appState.theme || 'light');
 
       // Dual Mirror Shadow Backup for Data Safety
       const shadowPayload = JSON.stringify({
@@ -126,6 +130,24 @@
       localStorage.setItem(STORAGE_KEYS.SHADOW_BACKUP, shadowPayload);
     } catch (e) {
       console.error('Error saving data to LocalStorage:', e);
+    }
+  }
+
+  function applyTheme(theme) {
+    appState.theme = theme;
+    localStorage.setItem(STORAGE_KEYS.THEME, theme);
+    document.body.setAttribute('data-theme', theme);
+
+    const metaTheme = document.getElementById('meta-theme-color');
+    if (metaTheme) {
+      metaTheme.setAttribute('content', theme === 'dark' ? '#0F172A' : '#F4F7F6');
+    }
+
+    const radioLight = document.getElementById('radio-theme-light');
+    const radioDark = document.getElementById('radio-theme-dark');
+    if (radioLight && radioDark) {
+      radioLight.checked = (theme === 'light');
+      radioDark.checked = (theme === 'dark');
     }
   }
 
@@ -175,6 +197,7 @@
   // --- STATE ---
   let appState = {
     onboarded: false,
+    theme: 'light',
     business: {
       name: 'Your Business Name',
       phone: '03XX-XXXXXXX',
@@ -207,6 +230,7 @@
   // --- INITIALIZATION ---
   function init() {
     loadData();
+    applyTheme(appState.theme || 'light');
     bindEvents();
     initPWA();
 
@@ -227,35 +251,6 @@
           splashScreen.style.display = 'none';
         }, 500);
       }, 1800);
-    }
-  }
-
-  // --- STORAGE HELPERS ---
-  function loadData() {
-    try {
-      appState.onboarded = localStorage.getItem(STORAGE_KEYS.ONBOARDED) === 'true';
-
-      const storedBiz = localStorage.getItem(STORAGE_KEYS.BUSINESS);
-      if (storedBiz) appState.business = JSON.parse(storedBiz);
-
-      const storedCust = localStorage.getItem(STORAGE_KEYS.CUSTOMERS);
-      if (storedCust) appState.customers = JSON.parse(storedCust);
-
-      const storedTx = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS);
-      if (storedTx) appState.transactions = JSON.parse(storedTx);
-    } catch (e) {
-      console.error('Error loading data from LocalStorage:', e);
-    }
-  }
-
-  function saveData() {
-    try {
-      localStorage.setItem(STORAGE_KEYS.ONBOARDED, appState.onboarded);
-      localStorage.setItem(STORAGE_KEYS.BUSINESS, JSON.stringify(appState.business));
-      localStorage.setItem(STORAGE_KEYS.CUSTOMERS, JSON.stringify(appState.customers));
-      localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(appState.transactions));
-    } catch (e) {
-      console.error('Error saving data to LocalStorage:', e);
     }
   }
 
@@ -997,23 +992,31 @@
       });
     });
 
-    // Settings Actions
-    document.getElementById('item-edit-business').addEventListener('click', () => {
+    // Theme Selection
+    document.getElementById('item-theme-light')?.addEventListener('click', () => applyTheme('light'));
+    document.getElementById('item-theme-dark')?.addEventListener('click', () => applyTheme('dark'));
+    document.getElementById('radio-theme-light')?.addEventListener('change', () => applyTheme('light'));
+    document.getElementById('radio-theme-dark')?.addEventListener('change', () => applyTheme('dark'));
+
+    // About Digital Khata
+    document.getElementById('item-about-app')?.addEventListener('click', () => {
+      const aboutModal = document.getElementById('modal-about-app');
+      if (aboutModal) aboutModal.classList.remove('hidden');
+    });
+
+    // Settings Actions - Business Edit
+    const openBizModal = () => {
       document.getElementById('input-biz-name').value = appState.business.name || '';
       document.getElementById('input-biz-phone').value = appState.business.phone || '';
       document.getElementById('input-biz-address').value = appState.business.address || '';
       document.getElementById('modal-edit-business').classList.remove('hidden');
-    });
+    };
 
-    document.getElementById('item-edit-phone').addEventListener('click', () => {
-      document.getElementById('item-edit-business').click();
-    });
+    document.getElementById('item-edit-business')?.addEventListener('click', openBizModal);
+    document.getElementById('item-edit-phone')?.addEventListener('click', openBizModal);
+    document.getElementById('item-edit-address')?.addEventListener('click', openBizModal);
 
-    document.getElementById('item-edit-address').addEventListener('click', () => {
-      document.getElementById('item-edit-business').click();
-    });
-
-    document.getElementById('form-edit-business').addEventListener('submit', (e) => {
+    document.getElementById('form-edit-business')?.addEventListener('submit', (e) => {
       e.preventDefault();
       appState.business.name = document.getElementById('input-biz-name').value.trim() || 'Your Business Name';
       appState.business.phone = document.getElementById('input-biz-phone').value.trim();

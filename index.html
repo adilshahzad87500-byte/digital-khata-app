@@ -7,7 +7,7 @@
   
   <!-- PWA Meta Tags & Manifest -->
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0F3E44">
+  <meta name="theme-color" content="#F4F7F6" id="meta-theme-color">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -600,17 +600,19 @@
               <span>Appearance</span>
             </div>
             <div class="settings-card">
-              <div class="setting-item">
+              <div class="setting-item clickable" id="item-theme-light">
                 <div class="item-info">
                   <span class="item-label">Light Theme</span>
+                  <span class="item-sublabel">Clean pastel light theme</span>
                 </div>
-                <input type="radio" name="theme-choice" checked disabled class="radio-custom">
+                <input type="radio" name="theme-choice" id="radio-theme-light" value="light" checked class="radio-custom">
               </div>
-              <div class="setting-item opacity-50">
+              <div class="setting-item clickable" id="item-theme-dark">
                 <div class="item-info">
                   <span class="item-label">Dark Theme</span>
+                  <span class="item-sublabel">Sleek high-contrast dark mode</span>
                 </div>
-                <input type="radio" name="theme-choice" disabled class="radio-custom">
+                <input type="radio" name="theme-choice" id="radio-theme-dark" value="dark" class="radio-custom">
               </div>
             </div>
           </div>
@@ -912,6 +914,48 @@
 
             <button id="btn-trigger-browser-install" class="btn btn-primary btn-block btn-lg mb-2">Install Now</button>
             <button class="btn btn-secondary btn-block btn-close-modal">Dismiss</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- About Digital Khata Modal -->
+      <div id="modal-about-app" class="modal-backdrop hidden">
+        <div class="modal-card">
+          <div class="modal-header">
+            <h3 class="modal-title">About Digital Khata</h3>
+            <button class="btn-icon btn-close-modal">&times;</button>
+          </div>
+          <div class="modal-body text-center">
+            <div class="about-logo-wrapper mb-3">
+              <img src="digital-khata-logo.svg" alt="Digital Khata" style="width: 64px; height: 64px;">
+            </div>
+            <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">Digital Khata</h3>
+            <span class="badge badge-purple mb-3" style="display: inline-block; padding: 4px 12px; font-weight: 600;">Version 1.0.0</span>
+            <p class="text-muted" style="font-size: 13.5px; line-height: 1.5; margin-bottom: 16px;">
+              Digital Khata is a 100% free, safe & secure digital ledger app. Manage customer udhaar, payment records, and business balances offline anytime.
+            </p>
+
+            <div class="about-features-list" style="text-align: left; background: var(--bg-input); padding: 14px; border-radius: 12px; margin-bottom: 16px; border: 1px solid var(--border-color);">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span style="font-size: 13px; font-weight: 500;">100% Offline & Safe Storage</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span style="font-size: 13px; font-weight: 500;">Fast Udhaar & Payment Management</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span style="font-size: 13px; font-weight: 500;">WhatsApp & Statement Sharing</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span style="font-size: 13px; font-weight: 500;">One-click Data Backup & Restore</span>
+              </div>
+            </div>
+
+            <p class="text-muted" style="font-size: 12px;">Designed for Small Businesses & Shopkeepers</p>
+            <button class="btn btn-primary btn-block btn-close-modal mt-3">Close</button>
           </div>
         </div>
       </div>

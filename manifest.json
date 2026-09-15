@@ -4,8 +4,8 @@
   "description": "Manage customer balances, udhaar records, and payments safely and offline.",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0F3E44",
-  "theme_color": "#0F3E44",
+  "background_color": "#F4F7F6",
+  "theme_color": "#F4F7F6",
   "orientation": "portrait-primary",
   "icons": [
     {

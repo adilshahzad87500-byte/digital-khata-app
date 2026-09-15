@@ -49,6 +49,103 @@
   --shadow-fab: 0 8px 24px rgba(15, 62, 68, 0.35);
 }
 
+/* ==========================================
+   DARK MODE SYSTEM
+   ========================================== */
+[data-theme="dark"] {
+  /* Primary & Palette Colors */
+  --color-primary: #14B8A6;
+  --color-primary-hover: #0D9488;
+  --color-primary-light: #132E35;
+
+  /* Card Tints & Accents */
+  --bg-purple: #2E1065;
+  --text-purple: #C084FC;
+  --badge-purple: #4C1D95;
+
+  --bg-green: #064E3B;
+  --text-green: #34D399;
+  --badge-green: #065F46;
+
+  --bg-yellow: #451A03;
+  --text-yellow: #FBBF24;
+  --badge-yellow: #78350F;
+
+  /* Neutrals & Base */
+  --bg-app: #0F172A;
+  --bg-card: #1E293B;
+  --bg-input: #334155;
+  --border-color: #334155;
+
+  --text-main: #F8FAFC;
+  --text-muted: #94A3B8;
+  --text-light: #64748B;
+
+  --color-danger: #F87171;
+  --bg-danger-light: #451212;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-nav: 0 -4px 20px rgba(0, 0, 0, 0.5);
+  --shadow-fab: 0 8px 24px rgba(20, 184, 166, 0.4);
+}
+
+[data-theme="dark"] html,
+[data-theme="dark"] body {
+  background-color: #0B0F19;
+  color: var(--text-main);
+}
+
+[data-theme="dark"] .app-viewport {
+  background: radial-gradient(circle at top left, #1E293B 0%, #0B0F19 100%);
+}
+
+[data-theme="dark"] .app-container {
+  background-color: var(--bg-app);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .app-header {
+  background-color: var(--bg-app);
+}
+
+[data-theme="dark"] .bottom-nav {
+  background-color: #1E293B;
+  border-top-color: #334155;
+}
+
+[data-theme="dark"] .nav-item {
+  color: #94A3B8;
+}
+
+[data-theme="dark"] .nav-item.active {
+  color: #14B8A6;
+}
+
+[data-theme="dark"] .modal-card,
+[data-theme="dark"] .action-sheet-content {
+  background-color: #1E293B;
+  color: #F8FAFC;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .setting-item.clickable:active {
+  background-color: #334155;
+}
+
+[data-theme="dark"] .splash-screen {
+  background-color: #0F172A;
+}
+
+[data-theme="dark"] .btn-secondary {
+  background-color: #334155;
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .btn-secondary:hover {
+  background-color: #475569;
+}
+
 /* Reset & Global Base */
 * {
   box-sizing: border-box;
