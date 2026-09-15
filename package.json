@@ -1,0 +1,26 @@
+{
+  "name": "digital-khata",
+  "version": "2.0.0",
+  "description": "Digital Khata - Udhaar & Payment Management App with Cloud Auth, DB, and SMS OTP",
+  "main": "js/app.js",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx serve ."
+  },
+  "keywords": [
+    "digital-khata",
+    "udhaar",
+    "ledger",
+    "pwa",
+    "supabase",
+    "twilio"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "twilio": "^4.23.0"
+  }
+}

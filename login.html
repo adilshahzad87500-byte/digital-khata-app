@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Login - Digital Khata</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#F4F7F6" id="meta-theme-color">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="auth-page-body">
+
+  <div class="app-viewport">
+    <div class="app-container auth-container">
+      
+      <!-- Background Shapes -->
+      <div class="pastel-shape shape-top-right"></div>
+      <div class="pastel-shape shape-bottom-left"></div>
+
+      <div class="auth-card-wrapper">
+        <!-- Logo & Header -->
+        <div class="auth-header text-center">
+          <div class="welcome-logo-wrapper mb-2">
+            <img src="digital-khata-logo.svg" alt="Digital Khata Logo" class="welcome-logo">
+          </div>
+          <h1 class="auth-title">Welcome Back</h1>
+          <p class="auth-subtitle">Log in to manage your Digital Khata</p>
+        </div>
+
+        <!-- Alert Error Banner -->
+        <div id="auth-error-alert" class="alert-banner alert-danger hidden">
+          <span id="auth-error-message">Invalid phone number or password.</span>
+        </div>
+
+        <!-- Login Form -->
+        <form id="form-login" class="app-form">
+          <div class="form-group">
+            <label for="input-login-phone">Phone Number</label>
+            <div class="input-with-icon">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
+              </svg>
+              <input type="tel" id="input-login-phone" placeholder="03XX-XXXXXXX" required>
+            </div>
+          </div>
+
+          <div class="form-group mb-2">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label for="input-login-password" style="margin:0;">Password</label>
+              <a href="forgot-password.html" class="auth-link-sm">Forgot Password?</a>
+            </div>
+            <div class="input-with-icon">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0110 0v4"/>
+              </svg>
+              <input type="password" id="input-login-password" placeholder="Enter your password" required>
+            </div>
+          </div>
+
+          <button type="submit" id="btn-login-submit" class="btn btn-primary btn-block btn-lg mt-4">
+            <span>Log In</span>
+          </button>
+        </form>
+
+        <!-- Footer Link -->
+        <div class="auth-footer text-center mt-4">
+          <p class="text-muted" style="font-size: 13.5px;">
+            Don't have an account? <a href="signup.html" class="auth-link-bold">Sign Up</a>
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/database.js"></script>
+  <script src="js/migration.js"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // If user is already logged in, redirect to index.html dashboard
+      if (window.Auth && window.Auth.isLoggedIn()) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const formLogin = document.getElementById('form-login');
+      const errorAlert = document.getElementById('auth-error-alert');
+      const errorMsg = document.getElementById('auth-error-message');
+      const submitBtn = document.getElementById('btn-login-submit');
+
+      formLogin.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorAlert.classList.add('hidden');
+
+        const phone = document.getElementById('input-login-phone').value;
+        const password = document.getElementById('input-login-password').value;
+
+        submitBtn.disabled = true;
+        submitBtn.querySelector('span').textContent = 'Logging in...';
+
+        try {
+          await window.Auth.login({ phone, password });
+          window.location.href = 'index.html';
+        } catch (err) {
+          errorMsg.textContent = err.message || 'Login failed. Please check your credentials.';
+          errorAlert.classList.remove('hidden');
+          submitBtn.disabled = false;
+          submitBtn.querySelector('span').textContent = 'Log In';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

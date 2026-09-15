@@ -51,6 +51,50 @@
       </div>
 
       <!-- ========================================== -->
+      <!-- APP LOCK SCREEN (Password Overlay) -->
+      <!-- ========================================== -->
+      <div id="screen-app-lock" class="app-lock-screen hidden">
+        <div class="lock-card">
+          <div class="lock-avatar-wrapper">
+            <div class="lock-avatar" id="lock-user-avatar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0110 0v4"/>
+              </svg>
+            </div>
+          </div>
+          <h2 class="lock-title">Digital Khata</h2>
+          <p class="lock-subtitle" id="lock-subtitle-text">Enter PIN to unlock</p>
+          
+          <!-- PIN Dots Display -->
+          <div class="pin-dots" id="lock-pin-dots">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+
+          <div class="lock-error-msg hidden" id="lock-error-msg">Incorrect Password! Try again.</div>
+
+          <!-- PIN Keypad -->
+          <div class="pin-keypad">
+            <button class="keypad-btn" data-key="1">1</button>
+            <button class="keypad-btn" data-key="2">2</button>
+            <button class="keypad-btn" data-key="3">3</button>
+            <button class="keypad-btn" data-key="4">4</button>
+            <button class="keypad-btn" data-key="5">5</button>
+            <button class="keypad-btn" data-key="6">6</button>
+            <button class="keypad-btn" data-key="7">7</button>
+            <button class="keypad-btn" data-key="8">8</button>
+            <button class="keypad-btn" data-key="9">9</button>
+            <button class="keypad-btn key-action" id="btn-lock-clear">C</button>
+            <button class="keypad-btn" data-key="0">0</button>
+            <button class="keypad-btn key-action" id="btn-lock-delete">⌫</button>
+          </div>
+
+          <button id="btn-forgot-password-link" class="btn-link-text">Forgot Password?</button>
+        </div>
+      </div>
       <!-- SCREEN 1: WELCOME / ONBOARDING -->
       <!-- ========================================== -->
       <section id="screen-welcome" class="screen active">
@@ -78,11 +122,13 @@
             <h1 class="header-brand">Digital Khata</h1>
             <p class="header-subtitle">Manage your customers and payments</p>
           </div>
-          <button class="btn-icon" id="btn-header-settings" title="Settings">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/>
-              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
-            </svg>
+          <button class="btn-icon header-profile-btn" id="btn-header-profile" title="Profile">
+            <div class="header-avatar-circle" id="header-avatar-container">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
           </button>
         </header>
 
@@ -549,6 +595,23 @@
         </header>
 
         <div class="screen-body">
+          <!-- Profile Banner Card -->
+          <div class="profile-banner-card mb-3" id="btn-settings-open-profile">
+            <div style="display: flex; align-items: center; gap: 14px;">
+              <div class="profile-avatar" id="settings-avatar-container" style="width: 48px; height: 48px; flex-shrink: 0;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </div>
+              <div>
+                <strong id="settings-display-owner" style="font-size: 15px; display: block; color: var(--text-main);">Owner Name</strong>
+                <span id="settings-display-biz" style="font-size: 12px; color: var(--text-muted);">Your Business Name</span>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 4px; color: var(--color-primary); font-size: 13px; font-weight: 600;">
+              <span>View Profile</span>
+              <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+          </div>
+
           <!-- Business Section -->
           <div class="settings-section">
             <div class="settings-section-header">
@@ -617,15 +680,14 @@
             </div>
           </div>
 
-          <!-- Application Install Section -->
+          <!-- App Shortcuts Section -->
           <div class="settings-section">
             <div class="settings-section-header">
               <svg class="sec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
+                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                <line x1="12" y1="18" x2="12.01" y2="18"/>
               </svg>
-              <span>Install Application</span>
+              <span>App Shortcuts</span>
             </div>
             <div class="settings-card">
               <div class="setting-item clickable" id="item-install-app">
@@ -670,11 +732,18 @@
                 </div>
                 <svg class="chevron text-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
               </div>
+              <div class="setting-item clickable" id="item-app-lock">
+                <div class="item-info">
+                  <span class="item-label">App Password Lock</span>
+                  <span class="item-sublabel" id="set-lock-sublabel">Protect app with PIN</span>
+                </div>
+                <span class="badge" id="set-lock-badge">Disabled</span>
+              </div>
             </div>
           </div>
 
           <!-- About Section -->
-          <div class="settings-section">
+          <div class="settings-section mb-4">
             <div class="settings-section-header">
               <svg class="sec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"/>
@@ -684,16 +753,209 @@
               <span>About</span>
             </div>
             <div class="settings-card">
-              <div class="setting-item">
-                <div class="item-info">
-                  <span class="item-label">App Version</span>
-                </div>
-                <span class="item-value-muted">1.0.0</span>
-              </div>
               <div class="setting-item clickable" id="item-about-app">
                 <div class="item-info">
                   <span class="item-label">About Digital Khata</span>
                 </div>
+                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Account & Logout Section -->
+          <div class="settings-section mb-5">
+            <div class="settings-section-header">
+              <svg class="sec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+              <span>Account</span>
+            </div>
+            <div class="settings-card">
+              <div class="setting-item clickable item-danger" id="item-logout-app">
+                <div class="item-info">
+                  <span class="item-label text-danger" style="font-weight: 600;">Log Out</span>
+                  <span class="item-sublabel">Safely log out of your Digital Khata account</span>
+                </div>
+                <svg class="chevron text-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SCREEN 10: MY PROFILE PAGE -->
+      <!-- ========================================== -->
+      <section id="screen-profile" class="screen">
+        <header class="app-header sub-header">
+          <button class="btn-icon btn-back" title="Back">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="19" y1="12" x2="5" y2="12"/>
+              <polyline points="12 19 5 12 12 5"/>
+            </svg>
+          </button>
+          <h1 class="header-title">My Profile</h1>
+          <div class="header-placeholder"></div>
+        </header>
+
+        <div class="screen-body">
+          <!-- Profile Avatar & Business Info Header Card -->
+          <div class="card p-4 mb-4 text-center" style="background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.03);">
+            <div class="profile-avatar-card">
+              <div class="profile-avatar-wrapper" style="margin: 0 auto 12px auto;">
+                <div class="profile-avatar" id="profile-page-avatar">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                </div>
+                <label for="input-profile-page-photo" class="profile-avatar-upload-btn" title="Upload Profile Picture">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                  </svg>
+                </label>
+                <input type="file" id="input-profile-page-photo" accept="image/*" style="display: none;">
+              </div>
+              <h2 class="profile-name" id="display-profile-page-name" style="font-size: 20px; font-weight: 700;">Owner Name</h2>
+              <p class="profile-biz-sub" id="display-profile-page-biz" style="font-size: 14px; margin-top: 2px;">Your Business Name</p>
+              <button id="btn-remove-profile-page-photo" class="btn-text-danger hidden" style="font-size: 13px; margin-top: 8px; background: none; border: none; cursor: pointer; color: var(--text-red); font-weight: 600;">Remove Photo</button>
+            </div>
+          </div>
+
+          <!-- Quick Business Stats Overview -->
+          <div class="profile-stats-grid mb-4">
+            <div class="profile-stat-card">
+              <span class="profile-stat-label">Total Customers</span>
+              <strong id="profile-stat-customers" class="profile-stat-value">0</strong>
+            </div>
+            <div class="profile-stat-card clickable" id="card-stat-security-trigger" style="cursor: pointer;">
+              <span class="profile-stat-label">Account Security</span>
+              <strong id="profile-stat-security" class="profile-stat-value" style="font-size: 16px;">Secured 🔒</strong>
+            </div>
+          </div>
+
+          <!-- Edit Profile Form Card -->
+          <div class="card p-4 mb-4" style="background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-color); padding: 20px;">
+            <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              Owner & Business Details
+            </h3>
+
+            <form id="form-profile-page-info" class="app-form form-grid-layout">
+              <div class="form-group">
+                <label for="input-profile-page-owner">Owner Name</label>
+                <div class="input-icon-wrapper">
+                  <input type="text" id="input-profile-page-owner" placeholder="Enter owner name">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="input-profile-page-biz">Business / Shop Name</label>
+                <div class="input-icon-wrapper">
+                  <input type="text" id="input-profile-page-biz" placeholder="Enter business name">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="input-profile-page-phone">Phone Number</label>
+                <div class="input-icon-wrapper">
+                  <input type="tel" id="input-profile-page-phone" placeholder="03XX-XXXXXXX">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="input-profile-page-email">Email Address</label>
+                <div class="input-icon-wrapper">
+                  <input type="email" id="input-profile-page-email" placeholder="owner@example.com">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </div>
+              </div>
+
+              <div class="form-group form-group-full">
+                <label for="input-profile-page-address">Shop / Business Address</label>
+                <div class="input-icon-wrapper">
+                  <textarea id="input-profile-page-address" rows="2" placeholder="Enter business address"></textarea>
+                  <svg class="input-icon textarea-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                </div>
+              </div>
+
+              <div class="form-group form-group-full">
+                <button type="submit" class="btn btn-primary btn-block btn-lg">Save Profile Details</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Security & App Preferences Group -->
+          <div class="profile-settings-group mb-4">
+            <h4 class="profile-section-title">Security & Preferences</h4>
+
+            <!-- Security PIN Lock -->
+            <div class="profile-setting-item clickable" id="item-profile-page-security">
+              <div class="setting-item-left">
+                <div class="setting-icon-box icon-purple">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0110 0v4"/>
+                  </svg>
+                </div>
+                <div class="setting-text">
+                  <span class="setting-title">App Password Lock</span>
+                  <span class="setting-desc" id="profile-page-lock-status">Protect app with PIN password</span>
+                </div>
+              </div>
+              <div class="setting-item-right">
+                <span class="badge" id="profile-page-lock-badge">Disabled</span>
+                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </div>
+
+            <!-- Appearance Theme -->
+            <div class="profile-setting-item clickable" id="item-profile-page-theme">
+              <div class="setting-item-left">
+                <div class="setting-icon-box icon-yellow">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"/>
+                    <line x1="12" y1="1" x2="12" y2="3"/>
+                    <line x1="12" y1="21" x2="12" y2="23"/>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                  </svg>
+                </div>
+                <div class="setting-text">
+                  <span class="setting-title">Appearance Theme</span>
+                  <span class="setting-desc" id="profile-page-theme-status">Light Mode</span>
+                </div>
+              </div>
+              <div class="setting-item-right">
+                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </div>
+
+            <!-- Backup & Data Export -->
+            <div class="profile-setting-item clickable" id="item-profile-page-backup">
+              <div class="setting-item-left">
+                <div class="setting-icon-box icon-green">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                  </svg>
+                </div>
+                <div class="setting-text">
+                  <span class="setting-title">Backup & Export Data</span>
+                  <span class="setting-desc">Download complete khata JSON backup</span>
+                </div>
+              </div>
+              <div class="setting-item-right">
                 <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
               </div>
             </div>
@@ -824,20 +1086,31 @@
             <button class="btn-icon btn-close-modal">&times;</button>
           </div>
           <div class="modal-body">
-            <form id="form-edit-business" class="app-form" novalidate>
+            <form id="form-edit-business" class="app-form form-grid-layout" novalidate>
               <div class="form-group">
                 <label for="input-biz-name">Business Name</label>
-                <input type="text" id="input-biz-name" placeholder="Enter business name" required>
+                <div class="input-icon-wrapper">
+                  <input type="text" id="input-biz-name" placeholder="Enter business name" required>
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
               </div>
               <div class="form-group">
                 <label for="input-biz-phone">Phone Number</label>
-                <input type="tel" id="input-biz-phone" placeholder="03XX-XXXXXXX">
+                <div class="input-icon-wrapper">
+                  <input type="tel" id="input-biz-phone" placeholder="03XX-XXXXXXX">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+                </div>
               </div>
-              <div class="form-group">
+              <div class="form-group form-group-full">
                 <label for="input-biz-address">Address</label>
-                <textarea id="input-biz-address" rows="2" placeholder="Enter address"></textarea>
+                <div class="input-icon-wrapper">
+                  <textarea id="input-biz-address" rows="2" placeholder="Enter address"></textarea>
+                  <svg class="input-icon textarea-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                </div>
               </div>
-              <button type="submit" class="btn btn-primary btn-block">Save Business Info</button>
+              <div class="form-group form-group-full">
+                <button type="submit" class="btn btn-primary btn-block">Save Business Info</button>
+              </div>
             </form>
           </div>
         </div>
@@ -951,11 +1224,253 @@
               <div style="display: flex; align-items: center; gap: 10px;">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                 <span style="font-size: 13px; font-weight: 500;">One-click Data Backup & Restore</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Modal -->
+      <div id="modal-profile" class="modal-backdrop hidden">
+        <div class="modal-card modal-card-scrollable">
+          <div class="modal-header">
+            <h3 class="modal-title">My Profile</h3>
+            <button class="btn-icon btn-close-modal">&times;</button>
+          </div>
+          <div class="modal-body">
+            
+            <!-- Profile Photo & Header -->
+            <div class="profile-avatar-card text-center mb-4">
+              <div class="profile-avatar-wrapper">
+                <div class="profile-avatar" id="profile-modal-avatar">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                </div>
+                <label for="input-profile-photo" class="profile-avatar-upload-btn" title="Upload Profile Picture">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                  </svg>
+                </label>
+                <input type="file" id="input-profile-photo" accept="image/*" style="display: none;">
+              </div>
+              <h3 class="profile-name" id="display-profile-name">Owner Name</h3>
+              <p class="profile-biz-sub" id="display-profile-biz">Your Business Name</p>
+              <button id="btn-remove-profile-photo" class="btn-text-danger hidden" style="font-size: 12px; margin-top: 6px; background: none; border: none; cursor: pointer; color: var(--text-red); font-weight: 600;">Remove Photo</button>
+            </div>
+
+            <!-- Profile Details Form -->
+            <form id="form-profile-info" class="app-form form-grid-layout">
+              <div class="form-group">
+                <label for="input-profile-owner">Your Name (Owner)</label>
+                <div class="input-icon-wrapper">
+                  <input type="text" id="input-profile-owner" placeholder="Enter owner name">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="input-profile-biz">Business / Shop Name</label>
+                <div class="input-icon-wrapper">
+                  <input type="text" id="input-profile-biz" placeholder="Enter business name">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="input-profile-phone">Phone Number</label>
+                <div class="input-icon-wrapper">
+                  <input type="tel" id="input-profile-phone" placeholder="03XX-XXXXXXX">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="input-profile-email">Email Address</label>
+                <div class="input-icon-wrapper">
+                  <input type="email" id="input-profile-email" placeholder="owner@example.com">
+                  <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </div>
+              </div>
+
+              <div class="form-group form-group-full">
+                <label for="input-profile-address">Shop / Business Address</label>
+                <div class="input-icon-wrapper">
+                  <textarea id="input-profile-address" rows="2" placeholder="Enter address"></textarea>
+                  <svg class="input-icon textarea-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                </div>
+              </div>
+
+              <div class="form-group form-group-full">
+                <button type="submit" class="btn btn-primary btn-block mb-3">Save Profile Details</button>
+              </div>
+            </form>
+
+            <!-- Profile Settings List -->
+            <div class="profile-settings-group mt-4">
+              <h4 class="profile-section-title">Security & App Settings</h4>
+              
+              <!-- App Lock Password Row -->
+              <div class="profile-setting-item clickable" id="item-open-security">
+                <div class="setting-item-left">
+                  <div class="setting-icon-box icon-purple">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                      <path d="M7 11V7a5 5 0 0110 0v4"/>
+                    </svg>
+                  </div>
+                  <div class="setting-text">
+                    <span class="setting-title">App Password Lock</span>
+                    <span class="setting-desc" id="profile-lock-status">Protect app with PIN</span>
+                  </div>
+                </div>
+                <div class="setting-item-right">
+                  <span class="badge" id="profile-lock-badge">Disabled</span>
+                  <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+              </div>
+
+              <!-- Appearance Theme Row -->
+              <div class="profile-setting-item clickable" id="item-profile-theme">
+                <div class="setting-item-left">
+                  <div class="setting-icon-box icon-yellow">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="5"/>
+                      <line x1="12" y1="1" x2="12" y2="3"/>
+                      <line x1="12" y1="21" x2="12" y2="23"/>
+                      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                    </svg>
+                  </div>
+                  <div class="setting-text">
+                    <span class="setting-title">Theme</span>
+                    <span class="setting-desc" id="profile-theme-status">Light Mode</span>
+                  </div>
+                </div>
+                <div class="setting-item-right">
+                  <button class="btn btn-sm btn-secondary" id="btn-toggle-profile-theme">Switch</button>
+                </div>
+              </div>
+
+              <!-- Backup & Restore Data Row -->
+              <div class="profile-setting-item clickable" id="item-profile-backup">
+                <div class="setting-item-left">
+                  <div class="setting-icon-box icon-teal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/>
+                      <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                  </div>
+                  <div class="setting-text">
+                    <span class="setting-title">Backup & Restore</span>
+                    <span class="setting-desc">Save or restore JSON data</span>
+                  </div>
+                </div>
+                <div class="setting-item-right">
+                  <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- App Security & Password Settings Modal -->
+      <div id="modal-security-settings" class="modal-backdrop hidden">
+        <div class="modal-card">
+          <div class="modal-header">
+            <h3 class="modal-title">App Password Settings</h3>
+            <button class="btn-icon btn-close-modal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <!-- Active Lock Info Status -->
+            <div class="security-status-card mb-4" id="security-status-box">
+              <div class="status-icon" id="security-status-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0110 0v4"/>
+                </svg>
+              </div>
+              <div class="status-text">
+                <h4 id="security-status-header" style="font-size: 15px; font-weight: 600; margin-bottom: 2px;">App Lock is Disabled</h4>
+                <p id="security-status-desc" class="text-muted" style="font-size: 12.5px; margin: 0;">Set a PIN password to lock the app whenever it opens.</p>
               </div>
             </div>
 
-            <p class="text-muted" style="font-size: 12px;">Designed for Small Businesses & Shopkeepers</p>
-            <button class="btn btn-primary btn-block btn-close-modal mt-3">Close</button>
+            <!-- Form: Set / Change Password -->
+            <form id="form-security-password" class="app-form">
+              <div class="form-group">
+                <label for="input-new-pin">Set 4-Digit Password / PIN</label>
+                <input type="password" id="input-new-pin" maxlength="6" placeholder="Enter PIN (e.g. 1234)" pattern="[0-9]*" inputmode="numeric" required>
+              </div>
+              <div class="form-group">
+                <label for="input-confirm-pin">Confirm Password / PIN</label>
+                <input type="password" id="input-confirm-pin" maxlength="6" placeholder="Confirm PIN" pattern="[0-9]*" inputmode="numeric" required>
+              </div>
+              <div class="form-group">
+                <label for="select-security-q">Security Question (For Reset)</label>
+                <select id="select-security-q" class="form-select" required style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-color); font-size: 14px;">
+                  <option value="What is your shop or business name?">What is your shop or business name?</option>
+                  <option value="What is your lucky number?">What is your lucky number?</option>
+                  <option value="What city were you born in?">What city were you born in?</option>
+                  <option value="What is your favorite food?">What is your favorite food?</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="input-security-a">Security Answer</label>
+                <input type="text" id="input-security-a" placeholder="Enter answer to recover password if forgotten" required>
+              </div>
+              
+              <button type="submit" id="btn-save-password" class="btn btn-primary btn-block mb-3">Save Password Lock</button>
+            </form>
+
+            <!-- Active Password Management Options -->
+            <div id="box-remove-password" class="hidden" style="border-top: 1px solid var(--border-color); margin-top: 16px; padding-top: 16px; display: flex; flex-direction: column; gap: 10px;">
+              <button id="btn-lock-now" type="button" class="btn btn-secondary btn-block" style="background: var(--color-primary-light); color: var(--color-primary); font-weight: 600;">🔒 Lock App Now</button>
+              <button id="btn-remove-password" type="button" class="btn btn-danger btn-block">Remove Password / Disable App Lock</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Forgot Password Recovery Modal -->
+      <div id="modal-forgot-password" class="modal-backdrop hidden">
+        <div class="modal-card">
+          <div class="modal-header">
+            <h3 class="modal-title">Reset App Password</h3>
+            <button class="btn-icon btn-close-modal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <p class="text-muted mb-3" style="font-size: 13px; line-height: 1.5;">
+              Answer your security question below to set a new password. <strong>Note: Resetting your password will NEVER delete your customers or transactions data.</strong>
+            </p>
+
+            <form id="form-forgot-password" class="app-form">
+              <div class="form-group">
+                <label style="font-weight: 600; font-size: 13px;">Security Question:</label>
+                <div id="forgot-q-text" style="font-size: 13.5px; padding: 10px 12px; background: var(--bg-input); border-radius: 8px; margin-top: 4px; color: var(--text-color); font-weight: 500; border: 1px solid var(--border-color);">
+                  What is your shop or business name?
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="input-forgot-answer">Your Answer</label>
+                <input type="text" id="input-forgot-answer" placeholder="Enter security answer" required>
+              </div>
+
+              <div class="form-group">
+                <label for="input-forgot-new-pin">New 4-Digit Password / PIN</label>
+                <input type="password" id="input-forgot-new-pin" maxlength="6" placeholder="Enter new PIN" pattern="[0-9]*" inputmode="numeric" required>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block mb-2">Reset Password & Unlock App</button>
+              <button type="button" class="btn btn-secondary btn-block btn-close-modal">Cancel</button>
+            </form>
           </div>
         </div>
       </div>
@@ -966,6 +1481,13 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/database.js"></script>
+  <script src="js/customers.js"></script>
+  <script src="js/transactions.js"></script>
+  <script src="js/migration.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

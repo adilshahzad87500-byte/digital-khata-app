@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment Secrets
+.env
+.env.local
+.env.production
+
+# Vercel & IDE
+.vercel
+.vscode/
+.idea/
+.DS_Store
+
+# Temporary & Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

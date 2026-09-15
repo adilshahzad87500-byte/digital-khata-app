@@ -12,7 +12,9 @@
     CUSTOMERS: 'digital_khata_customers',
     TRANSACTIONS: 'digital_khata_transactions',
     SHADOW_BACKUP: 'digital_khata_shadow_backup',
-    THEME: 'digital_khata_theme'
+    THEME: 'digital_khata_theme',
+    PROFILE: 'digital_khata_profile',
+    SECURITY: 'digital_khata_security'
   };
 
   // --- PWA INSTALLATION CONTROLLER ---
@@ -107,6 +109,16 @@
       }
       const storedTheme = localStorage.getItem(STORAGE_KEYS.THEME);
       if (storedTheme) appState.theme = storedTheme;
+
+      const storedProf = localStorage.getItem(STORAGE_KEYS.PROFILE);
+      if (storedProf) {
+        try { appState.profile = { ...appState.profile, ...JSON.parse(storedProf) }; } catch(e){}
+      }
+
+      const storedSec = localStorage.getItem(STORAGE_KEYS.SECURITY);
+      if (storedSec) {
+        try { appState.security = { ...appState.security, ...JSON.parse(storedSec) }; } catch(e){}
+      }
     } catch (e) {
       console.error('Data loading error! Attempting shadow recovery...', e);
       recoverFromShadowBackup();
@@ -120,11 +132,13 @@
       localStorage.setItem(STORAGE_KEYS.CUSTOMERS, JSON.stringify(appState.customers));
       localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(appState.transactions));
       localStorage.setItem(STORAGE_KEYS.THEME, appState.theme || 'light');
+      localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(appState.profile));
+      localStorage.setItem(STORAGE_KEYS.SECURITY, JSON.stringify(appState.security));
 
       // Dual Mirror Shadow Backup for Data Safety
       const shadowPayload = JSON.stringify({
         timestamp: new Date().toISOString(),
-        version: "1.1",
+        version: "1.2",
         state: appState
       });
       localStorage.setItem(STORAGE_KEYS.SHADOW_BACKUP, shadowPayload);
@@ -203,6 +217,17 @@
       phone: '03XX-XXXXXXX',
       address: 'Your Address'
     },
+    profile: {
+      ownerName: 'Owner Name',
+      email: '',
+      avatar: ''
+    },
+    security: {
+      isPasswordSet: false,
+      pin: '',
+      question: 'What is your shop or business name?',
+      answer: ''
+    },
     customers: [],
     transactions: [],
     activeCustomerId: null,
@@ -210,6 +235,8 @@
     activeReportTimeframe: 'all',
     quickActionTarget: null // 'udhaar' or 'payment' when using quick action picker
   };
+
+  let currentPinBuffer = '';
 
   // --- DOM ELEMENTS ---
   const screens = {
@@ -221,26 +248,51 @@
     addUdhaar: document.getElementById('screen-add-udhaar'),
     receivePayment: document.getElementById('screen-receive-payment'),
     reports: document.getElementById('screen-reports'),
-    settings: document.getElementById('screen-settings')
+    settings: document.getElementById('screen-settings'),
+    profile: document.getElementById('screen-profile')
   };
 
   const bottomNav = document.getElementById('bottom-nav');
   const navItems = document.querySelectorAll('.nav-item');
 
   // --- INITIALIZATION ---
-  function init() {
+  async function init() {
+    if (window.Auth) {
+      window.Auth.requireAuth();
+      const currentUser = window.Auth.getCurrentUser();
+      if (currentUser) {
+        appState.profile.ownerName = currentUser.fullName || appState.profile.ownerName;
+        appState.business.phone = currentUser.phone || appState.business.phone;
+        appState.business.name = currentUser.businessName || appState.business.name;
+        appState.profile.email = currentUser.email || appState.profile.email;
+
+        if (window.DB) {
+          try {
+            const data = await window.DB.loadUserData(currentUser.id);
+            if (data.customers && data.customers.length > 0) appState.customers = data.customers;
+            if (data.transactions && data.transactions.length > 0) appState.transactions = data.transactions;
+          } catch(err) {
+            console.warn('DB load warning:', err);
+          }
+        }
+      }
+    }
+
     loadData();
     applyTheme(appState.theme || 'light');
     bindEvents();
     initPWA();
 
     if (!appState.onboarded) {
-      showScreen('screen-welcome');
+      showScreen('screen-dashboard');
+      appState.onboarded = true;
+      saveData();
     } else {
       showScreen('screen-dashboard');
     }
 
     renderAllScreens();
+    checkAppLockOnStart();
 
     // Handle Splash Screen dismissal
     const splashScreen = document.getElementById('splash-screen');
@@ -287,6 +339,7 @@
     if (screenId === 'screen-customers') renderCustomersScreen();
     if (screenId === 'screen-reports') renderReportsScreen();
     if (screenId === 'screen-settings') renderSettingsScreen();
+    if (screenId === 'screen-profile') renderProfileScreen();
     if (screenId === 'screen-customer-details' && appState.activeCustomerId) {
       renderCustomerDetailsScreen(appState.activeCustomerId);
     }
@@ -350,6 +403,301 @@
     renderCustomersScreen();
     renderReportsScreen();
     renderSettingsScreen();
+    renderProfileScreen();
+    updateAvatarUI();
+  }
+
+  // --- APP LOCK & SECURITY LOGIC ---
+  function checkAppLockOnStart() {
+    const lockScreen = document.getElementById('screen-app-lock');
+    if (!lockScreen) return;
+    if (appState.security && appState.security.isPasswordSet && appState.security.pin) {
+      lockScreen.classList.remove('hidden');
+      currentPinBuffer = '';
+      updatePinDots();
+      updateAvatarUI();
+    } else {
+      lockScreen.classList.add('hidden');
+    }
+  }
+
+  function handleKeypadInput(key) {
+    const targetLength = (appState.security && appState.security.pin) ? appState.security.pin.length : 4;
+
+    if (key === 'clear') {
+      currentPinBuffer = '';
+      updatePinDots();
+      return;
+    }
+    if (key === 'delete') {
+      currentPinBuffer = currentPinBuffer.slice(0, -1);
+      updatePinDots();
+      return;
+    }
+    if (currentPinBuffer.length < targetLength) {
+      currentPinBuffer += key;
+      updatePinDots();
+    }
+
+    if (currentPinBuffer.length === targetLength) {
+      if (currentPinBuffer === appState.security.pin) {
+        // Unlock Success
+        const lockScreen = document.getElementById('screen-app-lock');
+        if (lockScreen) lockScreen.classList.add('hidden');
+        currentPinBuffer = '';
+        updatePinDots();
+        showToast('App Unlocked 🔓');
+      } else {
+        // Unlock Error
+        const dotsEl = document.getElementById('lock-pin-dots');
+        const errEl = document.getElementById('lock-error-msg');
+        if (dotsEl) dotsEl.classList.add('error');
+        if (errEl) errEl.classList.remove('hidden');
+
+        setTimeout(() => {
+          currentPinBuffer = '';
+          updatePinDots();
+          if (dotsEl) dotsEl.classList.remove('error');
+          if (errEl) errEl.classList.add('hidden');
+        }, 600);
+      }
+    }
+  }
+
+  function updatePinDots() {
+    const dotsContainer = document.getElementById('lock-pin-dots');
+    if (!dotsContainer) return;
+    const dots = dotsContainer.querySelectorAll('.dot');
+    dots.forEach((dot, index) => {
+      if (index < currentPinBuffer.length) {
+        dot.classList.add('filled');
+      } else {
+        dot.classList.remove('filled');
+      }
+    });
+  }
+
+  // --- PROFILE & AVATAR LOGIC ---
+  function updateAvatarUI() {
+    const avatarData = appState.profile ? appState.profile.avatar : '';
+    const headerContainer = document.getElementById('header-avatar-container');
+    const profileContainer = document.getElementById('profile-modal-avatar');
+    const profilePageContainer = document.getElementById('profile-page-avatar');
+    const settingsAvatarContainer = document.getElementById('settings-avatar-container');
+    const lockContainer = document.getElementById('lock-user-avatar');
+    const removeBtn = document.getElementById('btn-remove-profile-photo');
+    const removePageBtn = document.getElementById('btn-remove-profile-page-photo');
+
+    const defaultSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+
+    if (avatarData) {
+      const imgHtml = `<img src="${avatarData}" alt="Profile Photo">`;
+      if (headerContainer) headerContainer.innerHTML = imgHtml;
+      if (profileContainer) profileContainer.innerHTML = imgHtml;
+      if (profilePageContainer) profilePageContainer.innerHTML = imgHtml;
+      if (settingsAvatarContainer) settingsAvatarContainer.innerHTML = imgHtml;
+      if (lockContainer) lockContainer.innerHTML = imgHtml;
+      if (removeBtn) removeBtn.classList.remove('hidden');
+      if (removePageBtn) removePageBtn.classList.remove('hidden');
+    } else {
+      if (headerContainer) headerContainer.innerHTML = defaultSvg;
+      if (profileContainer) profileContainer.innerHTML = defaultSvg;
+      if (profilePageContainer) profilePageContainer.innerHTML = defaultSvg;
+      if (settingsAvatarContainer) settingsAvatarContainer.innerHTML = defaultSvg;
+      if (lockContainer) lockContainer.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>`;
+      if (removeBtn) removeBtn.classList.add('hidden');
+      if (removePageBtn) removePageBtn.classList.add('hidden');
+    }
+  }
+
+  function renderProfileScreen() {
+    updateAvatarUI();
+
+    const ownerName = (appState.profile && appState.profile.ownerName) || appState.business.name || 'Owner Name';
+    const bizName = appState.business.name || 'Your Business Name';
+
+    // Displays
+    const dispPageName = document.getElementById('display-profile-page-name');
+    const dispPageBiz = document.getElementById('display-profile-page-biz');
+    if (dispPageName) dispPageName.textContent = ownerName;
+    if (dispPageBiz) dispPageBiz.textContent = bizName;
+
+    // Inputs
+    const inPageOwner = document.getElementById('input-profile-page-owner');
+    const inPageBiz = document.getElementById('input-profile-page-biz');
+    const inPagePhone = document.getElementById('input-profile-page-phone');
+    const inPageEmail = document.getElementById('input-profile-page-email');
+    const inPageAddr = document.getElementById('input-profile-page-address');
+
+    if (inPageOwner) inPageOwner.value = (appState.profile && appState.profile.ownerName) || '';
+    if (inPageBiz) inPageBiz.value = appState.business.name || '';
+    if (inPagePhone) inPagePhone.value = appState.business.phone || '';
+    if (inPageEmail) inPageEmail.value = (appState.profile && appState.profile.email) || '';
+    if (inPageAddr) inPageAddr.value = appState.business.address || '';
+
+    // Quick Stats
+    const custStat = document.getElementById('profile-stat-customers');
+    const secStat = document.getElementById('profile-stat-security');
+    if (custStat) custStat.textContent = appState.customers ? appState.customers.length : 0;
+    if (secStat) {
+      if (appState.security && appState.security.isPasswordSet) {
+        secStat.textContent = 'Protected 🔒';
+        secStat.style.color = 'var(--text-green)';
+      } else {
+        secStat.textContent = 'Disabled';
+        secStat.style.color = 'var(--text-muted)';
+      }
+    }
+
+    // Lock status display on profile page
+    const lockStatusEl = document.getElementById('profile-page-lock-status');
+    const lockBadgeEl = document.getElementById('profile-page-lock-badge');
+    if (appState.security && appState.security.isPasswordSet) {
+      if (lockStatusEl) lockStatusEl.textContent = 'App Lock is Active (PIN Protected)';
+      if (lockBadgeEl) {
+        lockBadgeEl.textContent = 'Active 🔒';
+        lockBadgeEl.className = 'badge badge-green';
+      }
+    } else {
+      if (lockStatusEl) lockStatusEl.textContent = 'Protect app with PIN password';
+      if (lockBadgeEl) {
+        lockBadgeEl.textContent = 'Disabled';
+        lockBadgeEl.className = 'badge';
+      }
+    }
+
+    // Theme status display on profile page
+    const themeStatusEl = document.getElementById('profile-page-theme-status');
+    if (themeStatusEl) {
+      themeStatusEl.textContent = appState.theme === 'dark' ? 'Dark Mode' : 'Light Mode';
+    }
+
+    // Sync Settings screen banner display
+    const setOwner = document.getElementById('settings-display-owner');
+    const setBiz = document.getElementById('settings-display-biz');
+    if (setOwner) setOwner.textContent = ownerName;
+    if (setBiz) setBiz.textContent = bizName;
+
+    renderProfileModal();
+  }
+
+  function renderProfileModal() {
+    updateAvatarUI();
+
+    const ownerName = (appState.profile && appState.profile.ownerName) || appState.business.name || 'Owner Name';
+    const bizName = appState.business.name || 'Your Business Name';
+
+    const dispName = document.getElementById('display-profile-name');
+    const dispBiz = document.getElementById('display-profile-biz');
+    if (dispName) dispName.textContent = ownerName;
+    if (dispBiz) dispBiz.textContent = bizName;
+
+    const inOwner = document.getElementById('input-profile-owner');
+    const inBiz = document.getElementById('input-profile-biz');
+    const inPhone = document.getElementById('input-profile-phone');
+    const inEmail = document.getElementById('input-profile-email');
+    const inAddr = document.getElementById('input-profile-address');
+
+    if (inOwner) inOwner.value = (appState.profile && appState.profile.ownerName) || '';
+    if (inBiz) inBiz.value = appState.business.name || '';
+    if (inPhone) inPhone.value = appState.business.phone || '';
+    if (inEmail) inEmail.value = (appState.profile && appState.profile.email) || '';
+    if (inAddr) inAddr.value = appState.business.address || '';
+
+    // Lock status display
+    const lockStatusEl = document.getElementById('profile-lock-status');
+    const lockBadgeEl = document.getElementById('profile-lock-badge');
+    if (appState.security && appState.security.isPasswordSet) {
+      if (lockStatusEl) lockStatusEl.textContent = 'App Lock is Active (PIN Protected)';
+      if (lockBadgeEl) {
+        lockBadgeEl.textContent = 'Active 🔒';
+        lockBadgeEl.className = 'badge badge-green';
+      }
+    } else {
+      if (lockStatusEl) lockStatusEl.textContent = 'Protect app with PIN password';
+      if (lockBadgeEl) {
+        lockBadgeEl.textContent = 'Disabled';
+        lockBadgeEl.className = 'badge';
+      }
+    }
+
+    // Theme status display
+    const themeStatusEl = document.getElementById('profile-theme-status');
+    if (themeStatusEl) {
+      themeStatusEl.textContent = appState.theme === 'dark' ? 'Dark Mode' : 'Light Mode';
+    }
+  }
+
+  function handleProfilePhotoUpload(file) {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        const MAX_SIZE = 250;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_SIZE) {
+            height = Math.round((height * MAX_SIZE) / width);
+            width = MAX_SIZE;
+          }
+        } else {
+          if (height > MAX_SIZE) {
+            width = Math.round((width * MAX_SIZE) / height);
+            height = MAX_SIZE;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+        appState.profile.avatar = compressedBase64;
+        saveData();
+        updateAvatarUI();
+        showToast('Profile photo updated');
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function updateSecurityUI() {
+    const isLocked = appState.security && appState.security.isPasswordSet;
+    const headerEl = document.getElementById('security-status-header');
+    const descEl = document.getElementById('security-status-desc');
+    const iconEl = document.getElementById('security-status-icon');
+    const saveBtn = document.getElementById('btn-save-password');
+    const removeBox = document.getElementById('box-remove-password');
+
+    if (isLocked) {
+      if (headerEl) headerEl.textContent = 'App Lock is Active 🔒';
+      if (descEl) descEl.textContent = 'Your app is protected with a PIN password.';
+      if (iconEl) iconEl.classList.add('active-lock');
+      if (saveBtn) saveBtn.textContent = 'Update Password / Security';
+      if (removeBox) removeBox.classList.remove('hidden');
+    } else {
+      if (headerEl) headerEl.textContent = 'App Lock is Disabled';
+      if (descEl) descEl.textContent = 'Set a PIN password to lock the app whenever it opens.';
+      if (iconEl) iconEl.classList.remove('active-lock');
+      if (saveBtn) saveBtn.textContent = 'Enable Password Lock';
+      if (removeBox) removeBox.classList.add('hidden');
+    }
+
+    if (appState.security && appState.security.question) {
+      const qSelect = document.getElementById('select-security-q');
+      if (qSelect) qSelect.value = appState.security.question;
+    }
   }
 
   // 1. DASHBOARD
@@ -871,9 +1219,247 @@
       });
     });
 
-    // Header Settings icon
-    document.getElementById('btn-header-settings').addEventListener('click', () => {
-      showScreen('screen-settings');
+    // Header Profile Icon click -> Open Profile Page
+    document.getElementById('btn-header-profile')?.addEventListener('click', () => {
+      renderProfileScreen();
+      showScreen('screen-profile');
+    });
+
+    // Settings Profile Banner click
+    document.getElementById('btn-settings-open-profile')?.addEventListener('click', () => {
+      renderProfileScreen();
+      showScreen('screen-profile');
+    });
+
+    // Profile Form submission
+    document.getElementById('form-profile-info')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const ownerName = document.getElementById('input-profile-owner').value.trim();
+      const bizName = document.getElementById('input-profile-biz').value.trim();
+      const phone = document.getElementById('input-profile-phone').value.trim();
+      const email = document.getElementById('input-profile-email').value.trim();
+      const address = document.getElementById('input-profile-address').value.trim();
+
+      appState.profile.ownerName = ownerName || 'Owner Name';
+      appState.profile.email = email;
+      appState.business.name = bizName || 'Your Business Name';
+      appState.business.phone = phone || '03XX-XXXXXXX';
+      appState.business.address = address || 'Your Address';
+
+      saveData();
+      renderAllScreens();
+      renderProfileModal();
+      showToast('Profile details updated');
+    });
+
+    // Profile Page Form submission
+    document.getElementById('form-profile-page-info')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const ownerName = document.getElementById('input-profile-page-owner').value.trim();
+      const bizName = document.getElementById('input-profile-page-biz').value.trim();
+      const phone = document.getElementById('input-profile-page-phone').value.trim();
+      const email = document.getElementById('input-profile-page-email').value.trim();
+      const address = document.getElementById('input-profile-page-address').value.trim();
+
+      appState.profile.ownerName = ownerName || 'Owner Name';
+      appState.profile.email = email;
+      appState.business.name = bizName || 'Your Business Name';
+      appState.business.phone = phone || '03XX-XXXXXXX';
+      appState.business.address = address || 'Your Address';
+
+      saveData();
+      renderAllScreens();
+      renderProfileScreen();
+      showToast('Profile details updated successfully');
+    });
+
+    // Profile Page Photo File Input & Delete
+    const pagePhotoInput = document.getElementById('input-profile-page-photo');
+    if (pagePhotoInput) {
+      pagePhotoInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+          handleProfilePhotoUpload(e.target.files[0]);
+          e.target.value = '';
+        }
+      });
+    }
+
+    document.getElementById('btn-remove-profile-page-photo')?.addEventListener('click', () => {
+      appState.profile.avatar = '';
+      saveData();
+      updateAvatarUI();
+      showToast('Profile photo removed');
+    });
+
+    // Profile Page Action Items
+    document.getElementById('item-profile-page-security')?.addEventListener('click', () => {
+      updateSecurityUI();
+      document.getElementById('modal-security-settings')?.classList.remove('hidden');
+    });
+
+    document.getElementById('card-stat-security-trigger')?.addEventListener('click', () => {
+      updateSecurityUI();
+      document.getElementById('modal-security-settings')?.classList.remove('hidden');
+    });
+
+    document.getElementById('item-profile-page-theme')?.addEventListener('click', () => {
+      const newTheme = appState.theme === 'dark' ? 'light' : 'dark';
+      applyTheme(newTheme);
+      saveData();
+      renderProfileScreen();
+      showToast(`Switched to ${newTheme === 'dark' ? 'Dark' : 'Light'} Mode`);
+    });
+
+    document.getElementById('item-profile-page-backup')?.addEventListener('click', () => {
+      const backupBtn = document.getElementById('item-backup-data');
+      if (backupBtn) backupBtn.click();
+    });
+
+    // Security Modal Open
+    document.getElementById('item-open-security')?.addEventListener('click', () => {
+      updateSecurityUI();
+      document.getElementById('modal-security-settings')?.classList.remove('hidden');
+    });
+
+    // Password Lock Form submit
+    document.getElementById('form-security-password')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const pin = document.getElementById('input-new-pin').value.trim();
+      const confirmPin = document.getElementById('input-confirm-pin').value.trim();
+      const question = document.getElementById('select-security-q').value;
+      const answer = document.getElementById('input-security-a').value.trim();
+
+      if (pin !== confirmPin) {
+        alert('PIN passwords do not match!');
+        return;
+      }
+      if (pin.length < 4) {
+        alert('PIN must be at least 4 digits long');
+        return;
+      }
+
+      appState.security = {
+        isPasswordSet: true,
+        pin: pin,
+        question: question,
+        answer: answer
+      };
+
+      saveData();
+      closeAllModals();
+      renderProfileScreen();
+      renderProfileModal();
+      showToast('App Password Lock Enabled 🔒');
+    });
+
+    // Remove Password Lock button
+    document.getElementById('btn-remove-password')?.addEventListener('click', () => {
+      if (confirm('Are you sure you want to remove the password lock from Digital Khata?')) {
+        appState.security.isPasswordSet = false;
+        appState.security.pin = '';
+        saveData();
+        updateSecurityUI();
+        renderProfileScreen();
+        renderProfileModal();
+        showToast('App Password Lock removed');
+      }
+    });
+
+    // Lock App Now button
+    document.getElementById('btn-lock-now')?.addEventListener('click', () => {
+      closeAllModals();
+      checkAppLockOnStart();
+      showToast('App Locked 🔒');
+    });
+
+    // Theme Toggle inside Profile
+    const toggleThemeBtn = document.getElementById('btn-toggle-profile-theme');
+    if (toggleThemeBtn) {
+      toggleThemeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const nextTheme = appState.theme === 'dark' ? 'light' : 'dark';
+        applyTheme(nextTheme);
+        renderProfileModal();
+      });
+    }
+
+    const itemProfTheme = document.getElementById('item-profile-theme');
+    if (itemProfTheme) {
+      itemProfTheme.addEventListener('click', () => {
+        const nextTheme = appState.theme === 'dark' ? 'light' : 'dark';
+        applyTheme(nextTheme);
+        renderProfileModal();
+      });
+    }
+
+    // Backup & Restore link in Profile
+    document.getElementById('item-profile-backup')?.addEventListener('click', () => {
+      const backupBtn = document.getElementById('item-backup-data');
+      if (backupBtn) backupBtn.click();
+    });
+
+    // PIN Keypad buttons
+    document.querySelectorAll('.keypad-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.key;
+        if (key) handleKeypadInput(key);
+      });
+    });
+
+    document.getElementById('btn-lock-clear')?.addEventListener('click', () => handleKeypadInput('clear'));
+    document.getElementById('btn-lock-delete')?.addEventListener('click', () => handleKeypadInput('delete'));
+
+    // Physical Keyboard support for Lock Screen
+    window.addEventListener('keydown', (e) => {
+      const lockScreen = document.getElementById('screen-app-lock');
+      if (lockScreen && !lockScreen.classList.contains('hidden')) {
+        if (e.key >= '0' && e.key <= '9') {
+          handleKeypadInput(e.key);
+        } else if (e.key === 'Backspace') {
+          handleKeypadInput('delete');
+        } else if (e.key === 'Escape' || e.key === 'c' || e.key === 'C') {
+          handleKeypadInput('clear');
+        }
+      }
+    });
+
+    // Forgot Password link & form
+    document.getElementById('btn-forgot-password-link')?.addEventListener('click', () => {
+      const qText = document.getElementById('forgot-q-text');
+      if (qText) {
+        qText.textContent = (appState.security && appState.security.question) ? appState.security.question : 'What is your shop or business name?';
+      }
+      document.getElementById('modal-forgot-password')?.classList.remove('hidden');
+    });
+
+    document.getElementById('form-forgot-password')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const ansInput = document.getElementById('input-forgot-answer').value.trim().toLowerCase();
+      const newPin = document.getElementById('input-forgot-new-pin').value.trim();
+
+      const storedAns = (appState.security && appState.security.answer) ? appState.security.answer.trim().toLowerCase() : '';
+      const bizNameAns = (appState.business && appState.business.name) ? appState.business.name.trim().toLowerCase() : '';
+
+      if (ansInput && (ansInput === storedAns || ansInput === bizNameAns)) {
+        if (newPin.length < 4) {
+          alert('New PIN must be at least 4 digits long');
+          return;
+        }
+
+        appState.security.isPasswordSet = true;
+        appState.security.pin = newPin;
+        saveData();
+
+        closeAllModals();
+        const lockScreen = document.getElementById('screen-app-lock');
+        if (lockScreen) lockScreen.classList.add('hidden');
+        currentPinBuffer = '';
+        updatePinDots();
+
+        showToast('Password reset successfully! App unlocked 🔓');
+      } else {
+        alert('Incorrect security answer! Please check and try again.');
+      }
     });
 
     // Floating FAB Center (+)
@@ -1002,6 +1588,17 @@
     document.getElementById('item-about-app')?.addEventListener('click', () => {
       const aboutModal = document.getElementById('modal-about-app');
       if (aboutModal) aboutModal.classList.remove('hidden');
+    });
+
+    // Log Out Action
+    document.getElementById('item-logout-app')?.addEventListener('click', () => {
+      if (confirm('Are you sure you want to log out of Digital Khata?')) {
+        if (window.Auth) {
+          window.Auth.logout();
+        } else {
+          window.location.href = 'login.html';
+        }
+      }
     });
 
     // Settings Actions - Business Edit
