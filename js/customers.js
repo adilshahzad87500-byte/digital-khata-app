@@ -13,9 +13,10 @@
     let net = 0;
     custTxs.forEach(t => {
       const amt = parseFloat(t.amount) || 0;
-      if (t.type === 'udhaar') {
+      const type = (t.type || '').toLowerCase();
+      if (type === 'udhaar') {
         net += amt;
-      } else if (t.type === 'payment') {
+      } else if (type === 'payment') {
         net -= amt;
       }
     });

@@ -346,7 +346,7 @@
             <p id="detail-cust-address" class="detail-cust-address"></p>
           </div>
 
-          <!-- Large Remaining Balance Card -->
+          <!-- Enhanced Balance Breakdown Card -->
           <div class="balance-banner-card">
             <div class="balance-banner-header">
               <div class="balance-banner-icon">
@@ -355,12 +355,28 @@
                   <circle cx="16" cy="12" r="1.5"/>
                 </svg>
               </div>
-              <span class="balance-banner-label">Remaining</span>
+              <span class="balance-banner-label">Remaining Due</span>
             </div>
             <div class="balance-banner-amount" id="detail-cust-balance">Rs. 0</div>
+
+            <!-- 3-Way Sub-Breakdown Row -->
+            <div class="balance-breakdown-row">
+              <div class="breakdown-item item-udhaar">
+                <span class="lbl">Total Udhaar</span>
+                <strong id="detail-total-udhaar">Rs. 0</strong>
+              </div>
+              <div class="breakdown-item item-minus">
+                <span class="lbl">Payment (Minus -)</span>
+                <strong id="detail-total-received">Rs. 0</strong>
+              </div>
+            </div>
+
+            <div id="paisa-wasool-banner-tag" class="paisa-wasool-banner-tag hidden">
+              <span>🎉 Total Payment Received! Khata Clear</span>
+            </div>
           </div>
 
-          <!-- Two Large Action Buttons -->
+          <!-- Action Buttons -->
           <div class="cust-action-buttons">
             <button id="btn-add-udhaar" class="btn btn-purple btn-block">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -373,7 +389,14 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <polyline points="20 6 9 17 4 12"/>
               </svg>
-              Receive Payment
+              Receive Payment (Minus Udhaar)
+            </button>
+            <button id="btn-paisa-wasool" class="btn btn-paisa-wasool btn-block mt-2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20">
+                <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+              <span>⚡ Total Payment Received (Clear Khata)</span>
             </button>
           </div>
 
@@ -474,24 +497,32 @@
               <polyline points="12 19 5 12 12 5"/>
             </svg>
           </button>
-          <h1 class="header-title">Receive Payment</h1>
+          <h1 class="header-title">Receive Payment (Minus Udhaar)</h1>
           <div class="header-placeholder"></div>
         </header>
 
         <div class="screen-body">
+          <div class="payment-notice-banner mb-3">
+            <div class="notice-icon">💡</div>
+            <div class="notice-text">
+              <strong>Udhaar Deduct / Cut:</strong> Yeh payment customer ke kul (total) Udhaar me se minus ho jayegi.
+            </div>
+          </div>
+
           <form id="form-receive-payment" class="app-form" novalidate>
             <div class="form-group">
-              <label for="payment-amount">Payment Amount</label>
+              <label for="payment-amount">Payment Amount (Minus Karein)</label>
               <div class="input-currency-wrapper">
-                <input type="number" id="payment-amount" placeholder="Enter amount" min="1" step="any" required>
+                <input type="number" id="payment-amount" placeholder="Enter amount to minus" min="1" step="any" required>
                 <span class="currency-tag">Rs.</span>
               </div>
+              <button type="button" id="btn-autofill-paisa-wasool" class="btn-autofill-tag">⚡ Full Balance (Total Udhaar Minus)</button>
               <span class="field-error" id="err-payment-amount"></span>
             </div>
 
             <div class="form-group">
-              <label for="payment-note">Note <span class="label-optional">(Optional)</span></label>
-              <textarea id="payment-note" rows="2" placeholder="Add note..."></textarea>
+              <label for="payment-note">Note / Detail <span class="label-optional">(Optional)</span></label>
+              <textarea id="payment-note" rows="2" placeholder="e.g., Cash payment received..."></textarea>
             </div>
 
             <div class="form-group">
@@ -500,7 +531,7 @@
             </div>
 
             <div class="form-actions">
-              <button type="submit" class="btn btn-primary btn-block btn-lg">Save Payment</button>
+              <button type="submit" class="btn btn-emerald btn-block btn-lg">✓ Save & Minus Udhaar</button>
             </div>
           </form>
         </div>
@@ -1141,6 +1172,15 @@
           <div class="sheet-handle"></div>
           <h3 class="sheet-title" id="cust-menu-title">Customer Options</h3>
           <div class="sheet-actions-list">
+            <button id="opt-paisa-wasool" class="sheet-btn">
+              <div class="sheet-btn-icon icon-emerald">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                  <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+              </div>
+              <span>⚡ Total Payment Received (Full Settle)</span>
+            </button>
             <button id="opt-edit-customer" class="sheet-btn">
               <div class="sheet-btn-icon icon-teal">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1161,6 +1201,46 @@
             </button>
           </div>
           <button id="btn-close-cust-options" class="btn btn-secondary btn-block mt-3">Cancel</button>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- MODAL: POORA PAISA WASOOL CONFIRMATION -->
+      <!-- ========================================== -->
+      <div id="modal-paisa-wasool" class="modal-backdrop hidden">
+        <div class="modal-card">
+          <div class="modal-header text-center" style="display: block; position: relative;">
+            <button class="btn-icon btn-close-modal" style="position: absolute; right: 12px; top: 12px;">&times;</button>
+            <div class="paisa-wasool-header-icon">🎉</div>
+            <h3 class="modal-title" style="margin: 0;">Total Payment Received!</h3>
+          </div>
+          <div class="modal-body" style="padding-top: 8px;">
+            <p class="text-center text-muted mb-3" style="font-size: 13.5px;">
+              Mark full settlement for <strong id="pw-modal-cust-name">Customer</strong>
+            </p>
+            
+            <div class="paisa-wasool-summary-box mb-3">
+              <span class="summary-label">Remaining Balance</span>
+              <span class="summary-amount" id="pw-modal-balance">Rs. 0</span>
+            </div>
+
+            <form id="form-paisa-wasool" class="app-form">
+              <div class="form-group">
+                <label for="pw-date">Settlement Date</label>
+                <input type="date" id="pw-date" required>
+              </div>
+              <div class="form-group">
+                <label for="pw-note">Description / Note</label>
+                <input type="text" id="pw-note" value="Total Payment Received (Full Settlement)" required>
+              </div>
+              <div class="form-actions mt-3">
+                <button type="submit" class="btn btn-paisa-wasool btn-block btn-lg">
+                  ✓ Confirm Total Payment Received
+                </button>
+                <button type="button" class="btn btn-secondary btn-block btn-close-modal">Cancel</button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
 

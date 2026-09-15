@@ -11,9 +11,10 @@
 
     transactions.forEach(t => {
       const amt = parseFloat(t.amount) || 0;
-      if (t.type === 'udhaar') {
+      const type = (t.type || '').toLowerCase();
+      if (type === 'udhaar') {
         totalUdhaar += amt;
-      } else if (t.type === 'payment') {
+      } else if (type === 'payment') {
         totalReceived += amt;
       }
     });

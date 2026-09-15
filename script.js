@@ -353,8 +353,9 @@
 
     custTxs.forEach(t => {
       const amt = parseFloat(t.amount) || 0;
-      if (t.type === 'UDHAAR') totalUdhaar += amt;
-      if (t.type === 'PAYMENT') totalReceived += amt;
+      const type = (t.type || '').toUpperCase();
+      if (type === 'UDHAAR') totalUdhaar += amt;
+      if (type === 'PAYMENT') totalReceived += amt;
     });
 
     return {
@@ -370,8 +371,9 @@
 
     txList.forEach(t => {
       const amt = parseFloat(t.amount) || 0;
-      if (t.type === 'UDHAAR') totalUdhaar += amt;
-      if (t.type === 'PAYMENT') totalReceived += amt;
+      const type = (t.type || '').toUpperCase();
+      if (type === 'UDHAAR') totalUdhaar += amt;
+      if (type === 'PAYMENT') totalReceived += amt;
     });
 
     return {
@@ -679,6 +681,12 @@
     const iconEl = document.getElementById('security-status-icon');
     const saveBtn = document.getElementById('btn-save-password');
     const removeBox = document.getElementById('box-remove-password');
+    const pinInput = document.getElementById('input-new-pin');
+    const confirmPinInput = document.getElementById('input-confirm-pin');
+    const answerInput = document.getElementById('input-security-a');
+
+    if (pinInput) pinInput.value = '';
+    if (confirmPinInput) confirmPinInput.value = '';
 
     if (isLocked) {
       if (headerEl) headerEl.textContent = 'App Lock is Active 🔒';
@@ -694,9 +702,16 @@
       if (removeBox) removeBox.classList.add('hidden');
     }
 
-    if (appState.security && appState.security.question) {
-      const qSelect = document.getElementById('select-security-q');
-      if (qSelect) qSelect.value = appState.security.question;
+    if (appState.security) {
+      if (appState.security.question) {
+        const qSelect = document.getElementById('select-security-q');
+        if (qSelect) qSelect.value = appState.security.question;
+      }
+      if (appState.security.answer && answerInput) {
+        answerInput.value = appState.security.answer;
+      } else if (answerInput) {
+        answerInput.value = '';
+      }
     }
   }
 
@@ -773,6 +788,9 @@
       const bal = getCustomerBalance(cust.id);
       const initial = cust.name.charAt(0).toUpperCase();
 
+      const custTxs = appState.transactions.filter(t => t.customerId === cust.id);
+      const isPaisaWasool = bal.remaining <= 0 && custTxs.length > 0;
+
       const card = document.createElement('div');
       card.className = 'customer-card';
       card.innerHTML = `
@@ -787,8 +805,8 @@
           <div class="cust-balance-amount ${bal.remaining > 0 ? 'is-due' : 'is-paid'}">
             ${formatRs(bal.remaining)}
           </div>
-          <span class="cust-status-badge ${bal.remaining > 0 ? 'badge-due' : 'badge-paid'}">
-            ${bal.remaining > 0 ? 'Due' : 'Paid'}
+          <span class="cust-status-badge ${bal.remaining > 0 ? 'badge-due' : (isPaisaWasool ? 'badge-paisa-wasool' : 'badge-paid')}">
+            ${bal.remaining > 0 ? 'Due' : (isPaisaWasool ? '✓ Payment Received' : 'Paid')}
           </span>
         </div>
       `;
@@ -817,6 +835,11 @@
     const bal = getCustomerBalance(cust.id);
     document.getElementById('detail-cust-balance').textContent = formatRs(bal.remaining);
 
+    const elTotalUdhaar = document.getElementById('detail-total-udhaar');
+    const elTotalReceived = document.getElementById('detail-total-received');
+    if (elTotalUdhaar) elTotalUdhaar.textContent = formatRs(bal.totalUdhaar);
+    if (elTotalReceived) elTotalReceived.textContent = formatRs(bal.totalReceived);
+
     // Transactions list
     const custTxs = appState.transactions.filter(t => t.customerId === customerId);
     // Sort recent first
@@ -836,7 +859,7 @@
       custTxs.forEach(t => {
         const item = document.createElement('div');
         item.className = 'tx-item';
-        const isUdhaar = t.type === 'UDHAAR';
+        const isUdhaar = (t.type || '').toUpperCase() === 'UDHAAR';
 
         item.innerHTML = `
           <div>
@@ -850,14 +873,33 @@
             <div class="tx-amount ${isUdhaar ? 'udhaar-val' : 'payment-val'}">
               ${isUdhaar ? '+' : '-'} ${formatRs(t.amount)}
             </div>
-            <button class="tx-del-btn" title="Delete Transaction" data-tx-id="${t.id}">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="3 6 5 6 21 6"/>
-                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
-              </svg>
-            </button>
+            <div class="tx-actions-row">
+              ${isUdhaar ? `<button class="tx-pay-minus-btn" title="Minus/Pay this Udhaar" data-tx-id="${t.id}">⚡ Pay / Minus</button>` : ''}
+              <button class="tx-del-btn" title="Delete Transaction" data-tx-id="${t.id}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                </svg>
+              </button>
+            </div>
           </div>
         `;
+
+        if (isUdhaar) {
+          const btnPayMinus = item.querySelector('.tx-pay-minus-btn');
+          if (btnPayMinus) {
+            btnPayMinus.addEventListener('click', (e) => {
+              e.stopPropagation();
+              appState.activeCustomerId = customerId;
+              const pAmt = document.getElementById('payment-amount');
+              const pNote = document.getElementById('payment-note');
+              if (pAmt) pAmt.value = t.amount;
+              if (pNote) pNote.value = `Payment for: ${t.description || 'Udhaar'}`;
+              showToast(`⚡ Pre-filled ${formatRs(t.amount)} to minus from Udhaar`);
+              showScreen('screen-receive-payment');
+            });
+          }
+        }
 
         item.querySelector('.tx-del-btn').addEventListener('click', (e) => {
           e.stopPropagation();
@@ -870,11 +912,38 @@
 
     // WhatsApp Reminder button styling update
     const btnWa = document.getElementById('btn-whatsapp-reminder');
-    if (bal.remaining > 0) {
+    if (btnWa) {
       btnWa.style.opacity = '1';
       btnWa.disabled = false;
+    }
+
+    // Poora Paisa Wasool Button & Banner Tag update
+    const btnPaisaWasool = document.getElementById('btn-paisa-wasool');
+    const bannerTag = document.getElementById('paisa-wasool-banner-tag');
+
+    if (bal.remaining <= 0 && custTxs.length > 0) {
+      if (bannerTag) bannerTag.classList.remove('hidden');
+      if (btnPaisaWasool) {
+        btnPaisaWasool.classList.add('is-settled');
+        btnPaisaWasool.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span>✓ Total Payment Received (Khata Clear)</span>
+        `;
+      }
     } else {
-      btnWa.style.opacity = '0.6';
+      if (bannerTag) bannerTag.classList.add('hidden');
+      if (btnPaisaWasool) {
+        btnPaisaWasool.classList.remove('is-settled');
+        btnPaisaWasool.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20">
+            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          <span>⚡ Total Payment Received</span>
+        `;
+      }
     }
   }
 
@@ -922,9 +991,28 @@
 
   // 5. SETTINGS SCREEN
   function renderSettingsScreen() {
-    document.getElementById('set-biz-name').textContent = appState.business.name || 'Your Business Name';
-    document.getElementById('set-biz-phone').textContent = appState.business.phone || '03XX-XXXXXXX';
-    document.getElementById('set-biz-address').textContent = appState.business.address || 'Your Address';
+    const bizNameEl = document.getElementById('set-biz-name');
+    const bizPhoneEl = document.getElementById('set-biz-phone');
+    const bizAddrEl = document.getElementById('set-biz-address');
+    if (bizNameEl) bizNameEl.textContent = appState.business.name || 'Your Business Name';
+    if (bizPhoneEl) bizPhoneEl.textContent = appState.business.phone || '03XX-XXXXXXX';
+    if (bizAddrEl) bizAddrEl.textContent = appState.business.address || 'Your Address';
+
+    const lockSub = document.getElementById('set-lock-sublabel');
+    const lockBadge = document.getElementById('set-lock-badge');
+    if (appState.security && appState.security.isPasswordSet) {
+      if (lockSub) lockSub.textContent = 'App Lock is Active (PIN Protected)';
+      if (lockBadge) {
+        lockBadge.textContent = 'Active 🔒';
+        lockBadge.className = 'badge badge-green';
+      }
+    } else {
+      if (lockSub) lockSub.textContent = 'Protect app with PIN password';
+      if (lockBadge) {
+        lockBadge.textContent = 'Disabled';
+        lockBadge.className = 'badge';
+      }
+    }
   }
 
   // --- CRUD ACTIONS ---
@@ -1098,21 +1186,93 @@
     if (!cust) return;
 
     const bal = getCustomerBalance(cust.id);
-    if (bal.remaining <= 0) {
-      showToast('Customer has no outstanding balance');
-      return;
-    }
-
     // Clean phone number (replace leading 0 with 92 for Pakistan standard WhatsApp links)
     let rawPhone = cust.phone.replace(/[^0-9]/g, '');
     if (rawPhone.startsWith('0')) {
       rawPhone = '92' + rawPhone.substring(1);
     }
 
-    const message = `Assalam-o-Alaikum ${cust.name},\n\nYour remaining khata balance is ${formatRs(bal.remaining)}.\n\nPlease clear the outstanding amount.\n\nThank you.`;
-    const waUrl = `https://wa.me/${rawPhone}?text=${encodeURIComponent(message)}`;
+    let message = '';
+    if (bal.remaining > 0) {
+      message = `Assalam-o-Alaikum ${cust.name},\n\nYour remaining khata balance is ${formatRs(bal.remaining)}.\n\nPlease clear the outstanding amount.\n\nThank you.`;
+    } else {
+      message = `Assalam-o-Alaikum ${cust.name},\n\nAap ke Khata ka poora paisa (${formatRs(bal.totalReceived)}) wasool ho chuka hai. Aapka balance ab Rs. 0 (Mukammal Clear) hai.\n\nDigital Khata par transaction ke liye shukriya! 🎉`;
+    }
 
+    const waUrl = `https://wa.me/${rawPhone}?text=${encodeURIComponent(message)}`;
     window.open(waUrl, '_blank');
+  }
+
+  // --- TOTAL PAYMENT RECEIVED CONTROLLER ---
+  function openPaisaWasoolModal() {
+    const cust = appState.customers.find(c => c.id === appState.activeCustomerId);
+    if (!cust) {
+      showToast('Please select a customer first');
+      return;
+    }
+
+    const bal = getCustomerBalance(cust.id);
+    if (bal.remaining <= 0) {
+      showToast('✓ Iss customer ki total payment pehle hi receive ho chuki hai!');
+      return;
+    }
+
+    document.getElementById('pw-modal-cust-name').textContent = cust.name;
+    document.getElementById('pw-modal-balance').textContent = formatRs(bal.remaining);
+    document.getElementById('pw-date').value = getTodayString();
+    document.getElementById('pw-note').value = 'Total Payment Received (Full Settlement)';
+
+    document.getElementById('modal-paisa-wasool').classList.remove('hidden');
+  }
+
+  function handlePaisaWasoolSubmit(e) {
+    e.preventDefault();
+    const cust = appState.customers.find(c => c.id === appState.activeCustomerId);
+    if (!cust) return;
+
+    const bal = getCustomerBalance(cust.id);
+    if (bal.remaining <= 0) {
+      closeAllModals();
+      showToast('✓ Iss customer ka balance pehle hi clear hai!');
+      return;
+    }
+
+    const settleDate = document.getElementById('pw-date').value || getTodayString();
+    const note = document.getElementById('pw-note').value.trim() || 'Total Payment Received';
+
+    const newTx = {
+      id: 'tx_' + Date.now(),
+      customerId: cust.id,
+      type: 'PAYMENT',
+      amount: bal.remaining,
+      description: note,
+      date: settleDate,
+      createdAt: new Date().toISOString()
+    };
+
+    appState.transactions.push(newTx);
+    saveData();
+    closeAllModals();
+
+    showToast(`🎉 Shabaash! ${cust.name} se total payment (${formatRs(newTx.amount)}) receive ho gayi!`);
+    renderCustomerDetailsScreen(cust.id);
+  }
+
+  function handleAutoFillPaisaWasool() {
+    if (!appState.activeCustomerId) {
+      showToast('Please select a customer first');
+      return;
+    }
+
+    const bal = getCustomerBalance(appState.activeCustomerId);
+    if (bal.remaining <= 0) {
+      showToast('Customer has no remaining balance');
+      return;
+    }
+
+    document.getElementById('payment-amount').value = bal.remaining;
+    document.getElementById('payment-note').value = 'Total Payment Received';
+    showToast(`⚡ Full balance ${formatRs(bal.remaining)} auto-filled!`);
   }
 
   // --- MODALS & QUICK ACTIONS ---
@@ -1205,7 +1365,7 @@
   // --- EVENT BINDINGS ---
   function bindEvents() {
     // Welcome screen Get Started button
-    document.getElementById('btn-get-started').addEventListener('click', () => {
+    document.getElementById('btn-get-started')?.addEventListener('click', () => {
       appState.onboarded = true;
       saveData();
       showScreen('screen-dashboard');
@@ -1291,15 +1451,12 @@
       showToast('Profile photo removed');
     });
 
-    // Profile Page Action Items
-    document.getElementById('item-profile-page-security')?.addEventListener('click', () => {
-      updateSecurityUI();
-      document.getElementById('modal-security-settings')?.classList.remove('hidden');
-    });
-
-    document.getElementById('card-stat-security-trigger')?.addEventListener('click', () => {
-      updateSecurityUI();
-      document.getElementById('modal-security-settings')?.classList.remove('hidden');
+    // Security Modal Open Triggers
+    ['item-open-security', 'item-profile-page-security', 'item-app-lock', 'card-stat-security-trigger'].forEach(id => {
+      document.getElementById(id)?.addEventListener('click', () => {
+        updateSecurityUI();
+        document.getElementById('modal-security-settings')?.classList.remove('hidden');
+      });
     });
 
     document.getElementById('item-profile-page-theme')?.addEventListener('click', () => {
@@ -1313,12 +1470,6 @@
     document.getElementById('item-profile-page-backup')?.addEventListener('click', () => {
       const backupBtn = document.getElementById('item-backup-data');
       if (backupBtn) backupBtn.click();
-    });
-
-    // Security Modal Open
-    document.getElementById('item-open-security')?.addEventListener('click', () => {
-      updateSecurityUI();
-      document.getElementById('modal-security-settings')?.classList.remove('hidden');
     });
 
     // Password Lock Form submit
@@ -1347,7 +1498,7 @@
 
       saveData();
       closeAllModals();
-      renderProfileScreen();
+      renderAllScreens();
       renderProfileModal();
       showToast('App Password Lock Enabled 🔒');
     });
@@ -1359,7 +1510,7 @@
         appState.security.pin = '';
         saveData();
         updateSecurityUI();
-        renderProfileScreen();
+        renderAllScreens();
         renderProfileModal();
         showToast('App Password Lock removed');
       }
@@ -1463,24 +1614,24 @@
     });
 
     // Floating FAB Center (+)
-    document.getElementById('btn-fab-center').addEventListener('click', () => {
-      document.getElementById('modal-action-sheet').classList.remove('hidden');
+    document.getElementById('btn-fab-center')?.addEventListener('click', () => {
+      document.getElementById('modal-action-sheet')?.classList.remove('hidden');
     });
 
-    document.getElementById('btn-close-action-sheet').addEventListener('click', closeAllModals);
+    document.getElementById('btn-close-action-sheet')?.addEventListener('click', closeAllModals);
 
     // Action Sheet Items
-    document.getElementById('act-add-customer').addEventListener('click', () => {
+    document.getElementById('act-add-customer')?.addEventListener('click', () => {
       closeAllModals();
       showScreen('screen-add-customer');
     });
 
-    document.getElementById('act-add-udhaar').addEventListener('click', () => {
+    document.getElementById('act-add-udhaar')?.addEventListener('click', () => {
       closeAllModals();
       openCustomerPicker('udhaar');
     });
 
-    document.getElementById('act-receive-payment').addEventListener('click', () => {
+    document.getElementById('act-receive-payment')?.addEventListener('click', () => {
       closeAllModals();
       openCustomerPicker('payment');
     });
@@ -1506,27 +1657,29 @@
     });
 
     // Form Submissions
-    document.getElementById('form-add-customer').addEventListener('submit', handleAddCustomer);
-    document.getElementById('form-add-udhaar').addEventListener('submit', handleAddUdhaar);
-    document.getElementById('form-receive-payment').addEventListener('submit', handleReceivePayment);
+    document.getElementById('form-add-customer')?.addEventListener('submit', handleAddCustomer);
+    document.getElementById('form-add-udhaar')?.addEventListener('submit', handleAddUdhaar);
+    document.getElementById('form-receive-payment')?.addEventListener('submit', handleReceivePayment);
 
     // Set Default dates in forms
-    document.getElementById('udhaar-date').value = getTodayString();
-    document.getElementById('payment-date').value = getTodayString();
+    const uDate = document.getElementById('udhaar-date');
+    const pDate = document.getElementById('payment-date');
+    if (uDate) uDate.value = getTodayString();
+    if (pDate) pDate.value = getTodayString();
 
     // Customer Detail buttons
-    document.getElementById('btn-add-udhaar').addEventListener('click', () => {
+    document.getElementById('btn-add-udhaar')?.addEventListener('click', () => {
       showScreen('screen-add-udhaar');
     });
 
-    document.getElementById('btn-receive-payment').addEventListener('click', () => {
+    document.getElementById('btn-receive-payment')?.addEventListener('click', () => {
       showScreen('screen-receive-payment');
     });
 
-    document.getElementById('btn-whatsapp-reminder').addEventListener('click', triggerWhatsAppReminder);
+    document.getElementById('btn-whatsapp-reminder')?.addEventListener('click', triggerWhatsAppReminder);
 
     // Customer Menu button (3 dots)
-    document.getElementById('btn-cust-menu').addEventListener('click', () => {
+    document.getElementById('btn-cust-menu')?.addEventListener('click', () => {
       const cust = appState.customers.find(c => c.id === appState.activeCustomerId);
       if (cust) {
         document.getElementById('cust-menu-title').textContent = cust.name;
@@ -1534,9 +1687,17 @@
       }
     });
 
-    document.getElementById('btn-close-cust-options').addEventListener('click', closeAllModals);
+    document.getElementById('btn-close-cust-options')?.addEventListener('click', closeAllModals);
 
-    document.getElementById('opt-edit-customer').addEventListener('click', () => {
+    document.getElementById('btn-paisa-wasool')?.addEventListener('click', openPaisaWasoolModal);
+    document.getElementById('opt-paisa-wasool')?.addEventListener('click', () => {
+      closeAllModals();
+      openPaisaWasoolModal();
+    });
+    document.getElementById('form-paisa-wasool')?.addEventListener('submit', handlePaisaWasoolSubmit);
+    document.getElementById('btn-autofill-paisa-wasool')?.addEventListener('click', handleAutoFillPaisaWasool);
+
+    document.getElementById('opt-edit-customer')?.addEventListener('click', () => {
       closeAllModals();
       const cust = appState.customers.find(c => c.id === appState.activeCustomerId);
       if (cust) {
@@ -1547,16 +1708,16 @@
       }
     });
 
-    document.getElementById('opt-delete-customer').addEventListener('click', () => {
+    document.getElementById('opt-delete-customer')?.addEventListener('click', () => {
       if (confirm('Are you sure you want to delete this customer and all their transactions?')) {
         deleteCustomer(appState.activeCustomerId);
       }
     });
 
     // Search inputs live filtering
-    document.getElementById('dash-search-input').addEventListener('input', renderDashboard);
-    document.getElementById('cust-search-input').addEventListener('input', renderCustomersScreen);
-    document.getElementById('select-cust-search').addEventListener('input', renderCustomerPickerList);
+    document.getElementById('dash-search-input')?.addEventListener('input', renderDashboard);
+    document.getElementById('cust-search-input')?.addEventListener('input', renderCustomersScreen);
+    document.getElementById('select-cust-search')?.addEventListener('input', renderCustomerPickerList);
 
     // Customer Filter Chips
     document.querySelectorAll('[data-filter]').forEach(chip => {
@@ -1672,13 +1833,13 @@
     }
 
     // Clear All Data
-    document.getElementById('item-clear-data').addEventListener('click', () => {
-      document.getElementById('modal-clear-confirm').classList.remove('hidden');
+    document.getElementById('item-clear-data')?.addEventListener('click', () => {
+      document.getElementById('modal-clear-confirm')?.classList.remove('hidden');
     });
 
-    document.getElementById('btn-cancel-clear').addEventListener('click', closeAllModals);
+    document.getElementById('btn-cancel-clear')?.addEventListener('click', closeAllModals);
 
-    document.getElementById('btn-confirm-clear').addEventListener('click', () => {
+    document.getElementById('btn-confirm-clear')?.addEventListener('click', () => {
       localStorage.clear();
       appState = {
         onboarded: false,
