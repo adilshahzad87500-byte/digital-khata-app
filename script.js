@@ -10,8 +10,167 @@
     ONBOARDED: 'digital_khata_onboarded',
     BUSINESS: 'digital_khata_business',
     CUSTOMERS: 'digital_khata_customers',
-    TRANSACTIONS: 'digital_khata_transactions'
+    TRANSACTIONS: 'digital_khata_transactions',
+    SHADOW_BACKUP: 'digital_khata_shadow_backup'
   };
+
+  // --- PWA INSTALLATION CONTROLLER ---
+  let deferredInstallPrompt = null;
+
+  function initPWA() {
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('[ServiceWorker] Registered successfully:', reg.scope))
+          .catch(err => console.error('[ServiceWorker] Registration failed:', err));
+      });
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      const banner = document.getElementById('pwa-install-banner');
+      if (banner) banner.classList.remove('hidden');
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredInstallPrompt = null;
+      const banner = document.getElementById('pwa-install-banner');
+      if (banner) banner.classList.add('hidden');
+      showToast('Digital Khata app installed successfully!');
+    });
+  }
+
+  function handleInstallAppClick() {
+    if (deferredInstallPrompt) {
+      deferredInstallPrompt.prompt();
+      deferredInstallPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          showToast('Installing Digital Khata...');
+        }
+        deferredInstallPrompt = null;
+        const banner = document.getElementById('pwa-install-banner');
+        if (banner) banner.classList.add('hidden');
+      });
+    } else {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+
+      if (isStandalone) {
+        showToast('App is already installed!');
+        return;
+      }
+
+      const modal = document.getElementById('modal-install-guide');
+      const iosGuide = document.getElementById('install-guide-ios');
+      const triggerBtn = document.getElementById('btn-trigger-browser-install');
+
+      if (modal) {
+        if (isIOS && iosGuide) {
+          iosGuide.classList.remove('hidden');
+          if (triggerBtn) triggerBtn.classList.add('hidden');
+        } else if (iosGuide) {
+          iosGuide.classList.add('hidden');
+          if (triggerBtn) triggerBtn.classList.remove('hidden');
+        }
+        modal.classList.remove('hidden');
+      }
+    }
+  }
+
+  // --- STORAGE HELPERS & BACKEND INTEGRITY ---
+  function loadData() {
+    try {
+      appState.onboarded = localStorage.getItem(STORAGE_KEYS.ONBOARDED) === 'true';
+
+      const storedBiz = localStorage.getItem(STORAGE_KEYS.BUSINESS);
+      if (storedBiz) appState.business = JSON.parse(storedBiz);
+
+      const storedCust = localStorage.getItem(STORAGE_KEYS.CUSTOMERS);
+      if (storedCust) {
+        let parsed = JSON.parse(storedCust);
+        if (Array.isArray(parsed)) {
+          appState.customers = parsed.filter(c => c && c.id && c.name);
+        }
+      }
+
+      const storedTx = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS);
+      if (storedTx) {
+        let parsed = JSON.parse(storedTx);
+        if (Array.isArray(parsed)) {
+          appState.transactions = parsed.filter(t => t && t.id && t.customerId).map(t => ({
+            ...t,
+            amount: parseFloat(t.amount) || 0
+          }));
+        }
+      }
+    } catch (e) {
+      console.error('Data loading error! Attempting shadow recovery...', e);
+      recoverFromShadowBackup();
+    }
+  }
+
+  function saveData() {
+    try {
+      localStorage.setItem(STORAGE_KEYS.ONBOARDED, appState.onboarded);
+      localStorage.setItem(STORAGE_KEYS.BUSINESS, JSON.stringify(appState.business));
+      localStorage.setItem(STORAGE_KEYS.CUSTOMERS, JSON.stringify(appState.customers));
+      localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(appState.transactions));
+
+      // Dual Mirror Shadow Backup for Data Safety
+      const shadowPayload = JSON.stringify({
+        timestamp: new Date().toISOString(),
+        version: "1.1",
+        state: appState
+      });
+      localStorage.setItem(STORAGE_KEYS.SHADOW_BACKUP, shadowPayload);
+    } catch (e) {
+      console.error('Error saving data to LocalStorage:', e);
+    }
+  }
+
+  function recoverFromShadowBackup() {
+    try {
+      const shadow = localStorage.getItem(STORAGE_KEYS.SHADOW_BACKUP);
+      if (shadow) {
+        const payload = JSON.parse(shadow);
+        if (payload && payload.state) {
+          appState = payload.state;
+          saveData();
+          console.log('Successfully recovered data from shadow backup!');
+        }
+      }
+    } catch (err) {
+      console.error('Shadow recovery failed:', err);
+    }
+  }
+
+  function handleRestoreDataFile(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      try {
+        const imported = JSON.parse(e.target.result);
+        let targetState = imported.state ? imported.state : imported;
+
+        if (!targetState || typeof targetState !== 'object') {
+          throw new Error('Invalid JSON structure');
+        }
+
+        appState.onboarded = true;
+        if (targetState.business) appState.business = targetState.business;
+        if (Array.isArray(targetState.customers)) appState.customers = targetState.customers;
+        if (Array.isArray(targetState.transactions)) appState.transactions = targetState.transactions;
+
+        saveData();
+        renderAllScreens();
+        showToast('Data backup restored successfully!');
+      } catch (err) {
+        alert('Failed to restore backup: Invalid or corrupted JSON file.');
+      }
+    };
+    reader.readAsText(file);
+  }
 
   // --- STATE ---
   let appState = {
@@ -49,6 +208,7 @@
   function init() {
     loadData();
     bindEvents();
+    initPWA();
 
     if (!appState.onboarded) {
       showScreen('screen-welcome');
@@ -864,17 +1024,52 @@
       showToast('Business details updated');
     });
 
-    // Export Data
-    document.getElementById('item-export-data').addEventListener('click', () => {
-      const exportDataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", exportDataStr);
-      downloadAnchor.setAttribute("download", "digital_khata_backup.json");
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-      showToast('Data backup downloaded');
-    });
+    // PWA Install triggers
+    const installBtnItem = document.getElementById('item-install-app');
+    if (installBtnItem) installBtnItem.addEventListener('click', handleInstallAppClick);
+
+    const installBannerBtn = document.getElementById('btn-install-pwa-banner');
+    if (installBannerBtn) installBannerBtn.addEventListener('click', handleInstallAppClick);
+
+    const triggerBrowserInstall = document.getElementById('btn-trigger-browser-install');
+    if (triggerBrowserInstall) triggerBrowserInstall.addEventListener('click', handleInstallAppClick);
+
+    const dismissBannerBtn = document.getElementById('btn-dismiss-pwa');
+    if (dismissBannerBtn) {
+      dismissBannerBtn.addEventListener('click', () => {
+        const banner = document.getElementById('pwa-install-banner');
+        if (banner) banner.classList.add('hidden');
+      });
+    }
+
+    // Backup Data
+    const backupBtn = document.getElementById('item-backup-data');
+    if (backupBtn) {
+      backupBtn.addEventListener('click', () => {
+        const dateStr = new Date().toISOString().slice(0, 10);
+        const exportDataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", exportDataStr);
+        downloadAnchor.setAttribute("download", `digital_khata_backup_${dateStr}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+        showToast('Data backup downloaded');
+      });
+    }
+
+    // Restore Data
+    const restoreBtn = document.getElementById('item-restore-data');
+    const restoreInput = document.getElementById('input-restore-file');
+    if (restoreBtn && restoreInput) {
+      restoreBtn.addEventListener('click', () => restoreInput.click());
+      restoreInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+          handleRestoreDataFile(e.target.files[0]);
+          e.target.value = '';
+        }
+      });
+    }
 
     // Clear All Data
     document.getElementById('item-clear-data').addEventListener('click', () => {

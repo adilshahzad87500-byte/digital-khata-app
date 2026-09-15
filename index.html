@@ -4,6 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Digital Khata - Udhaar & Payment Management</title>
+  
+  <!-- PWA Meta Tags & Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0F3E44">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Digital Khata">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -77,6 +87,19 @@
         </header>
 
         <div class="screen-body">
+          <!-- PWA Install Banner -->
+          <div id="pwa-install-banner" class="pwa-install-banner hidden">
+            <div class="pwa-banner-icon">
+              <img src="icon-192.png" alt="Digital Khata Icon">
+            </div>
+            <div class="pwa-banner-text">
+              <strong>Install Digital Khata</strong>
+              <span>Install app on phone for 1-tap quick access</span>
+            </div>
+            <button id="btn-install-pwa-banner" class="btn btn-sm btn-primary">Install</button>
+            <button id="btn-dismiss-pwa" class="btn-icon-sm" title="Dismiss">&times;</button>
+          </div>
+
           <!-- Summary Cards Row -->
           <div class="summary-cards-row">
             <!-- Total Udhaar Card (Purple Tint) -->
@@ -592,7 +615,28 @@
             </div>
           </div>
 
-          <!-- Data Section -->
+          <!-- Application Install Section -->
+          <div class="settings-section">
+            <div class="settings-section-header">
+              <svg class="sec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span>Install Application</span>
+            </div>
+            <div class="settings-card">
+              <div class="setting-item clickable" id="item-install-app">
+                <div class="item-info">
+                  <span class="item-label" style="font-weight: 600; color: var(--color-primary);">Install Digital Khata</span>
+                  <span class="item-sublabel">Install on Phone or PC for 1-tap offline access</span>
+                </div>
+                <button class="btn btn-sm btn-primary">Install</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Data & Security Section -->
           <div class="settings-section">
             <div class="settings-section-header">
               <svg class="sec-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -600,13 +644,22 @@
                 <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
                 <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
               </svg>
-              <span>Data</span>
+              <span>Data & Security</span>
             </div>
             <div class="settings-card">
-              <div class="setting-item clickable" id="item-export-data">
+              <div class="setting-item clickable" id="item-backup-data">
                 <div class="item-info">
-                  <span class="item-label">Export Data</span>
+                  <span class="item-label">Backup Data (JSON)</span>
+                  <span class="item-sublabel">Save complete khata records to file</span>
                 </div>
+                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+              <div class="setting-item clickable" id="item-restore-data">
+                <div class="item-info">
+                  <span class="item-label">Restore Data (JSON)</span>
+                  <span class="item-sublabel">Import saved khata records from file</span>
+                </div>
+                <input type="file" id="input-restore-file" accept=".json" style="display: none;">
                 <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
               </div>
               <div class="setting-item clickable item-danger" id="item-clear-data">
@@ -833,6 +886,33 @@
             </button>
           </div>
           <button id="btn-close-cust-options" class="btn btn-secondary btn-block mt-3">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Install App Instructions Modal (iOS / Manual fallback) -->
+      <div id="modal-install-guide" class="modal-backdrop hidden">
+        <div class="modal-card">
+          <div class="modal-header">
+            <h3 class="modal-title">Install Digital Khata</h3>
+            <button class="btn-icon btn-close-modal">&times;</button>
+          </div>
+          <div class="modal-body text-center">
+            <img src="icon-192.png" alt="App Icon" style="width: 72px; height: 72px; margin-bottom: 12px; border-radius: 16px;">
+            <h4 style="font-size: 16px; margin-bottom: 8px;">Install on your device</h4>
+            <p class="text-muted" style="font-size: 13px; margin-bottom: 16px;">Access Digital Khata directly from your home screen with 1 tap even when offline.</p>
+            
+            <div id="install-guide-ios" class="install-instructions hidden" style="text-align: left; background: var(--bg-input); padding: 12px; border-radius: 12px; margin-bottom: 16px;">
+              <p style="font-size: 13px; font-weight: 600; margin-bottom: 6px;">iPhone / iPad (Safari):</p>
+              <ol style="font-size: 12px; color: var(--text-muted); padding-left: 20px; line-height: 1.6;">
+                <li>Tap the <strong>Share</strong> button at the bottom of Safari.</li>
+                <li>Scroll down and tap <strong>Add to Home Screen</strong>.</li>
+                <li>Tap <strong>Add</strong> in the top right corner.</li>
+              </ol>
+            </div>
+
+            <button id="btn-trigger-browser-install" class="btn btn-primary btn-block btn-lg mb-2">Install Now</button>
+            <button class="btn btn-secondary btn-block btn-close-modal">Dismiss</button>
+          </div>
         </div>
       </div>
 
