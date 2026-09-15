@@ -231,6 +231,7 @@
     customers: [],
     transactions: [],
     activeCustomerId: null,
+    activeDashFilter: 'all',
     activeCustomerFilter: 'all',
     activeReportTimeframe: 'all',
     quickActionTarget: null // 'udhaar' or 'payment' when using quick action picker
@@ -718,30 +719,115 @@
   // 1. DASHBOARD
   function renderDashboard() {
     const totals = getGlobalTotals();
-    document.getElementById('dash-total-udhaar').textContent = formatRs(totals.totalUdhaar);
-    document.getElementById('dash-total-received').textContent = formatRs(totals.totalReceived);
-    document.getElementById('dash-remaining').textContent = formatRs(totals.remaining);
+    const totalUdhaarEl = document.getElementById('dash-total-udhaar');
+    const totalReceivedEl = document.getElementById('dash-total-received');
+    const remainingEl = document.getElementById('dash-remaining');
 
-    const searchTerm = (document.getElementById('dash-search-input').value || '').trim().toLowerCase();
+    if (totalUdhaarEl) totalUdhaarEl.textContent = formatRs(totals.totalUdhaar);
+    if (totalReceivedEl) totalReceivedEl.textContent = formatRs(totals.totalReceived);
+    if (remainingEl) remainingEl.textContent = formatRs(totals.remaining);
+
+    // Business & Profile Greeting Updates
+    const ownerName = (appState.profile && appState.profile.ownerName) || (appState.business && appState.business.name) || 'User';
+    const bizName = (appState.business && appState.business.name) || 'Digital Khata';
+    
+    const greetingEl = document.getElementById('dash-greeting-text');
+    if (greetingEl) greetingEl.textContent = `Hello, ${ownerName}!`;
+
+    const bizNameEl = document.getElementById('dash-business-name');
+    if (bizNameEl) bizNameEl.textContent = bizName;
+
+    const dateEl = document.getElementById('dash-current-date');
+    if (dateEl) {
+      const now = new Date();
+      dateEl.textContent = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    }
+
+    // Hero Net Banner Calculations
+    const netAmountEl = document.getElementById('dash-net-amount');
+    const netLabelEl = document.getElementById('dash-net-status-label');
+    const netBadgeEl = document.getElementById('dash-net-badge');
+    const progressFill = document.getElementById('dash-net-progress-fill');
+    const custCountBadge = document.getElementById('dash-active-customers-badge');
+    const countBadgeEl = document.getElementById('dash-customer-count-badge');
+    const udhaarProgressLabel = document.getElementById('dash-progress-udhaar-label');
+    const receivedProgressLabel = document.getElementById('dash-progress-received-label');
+
+    const custCount = appState.customers ? appState.customers.length : 0;
+    if (custCountBadge) custCountBadge.textContent = `${custCount} Customers`;
+    if (countBadgeEl) countBadgeEl.textContent = custCount;
+
+    if (udhaarProgressLabel) udhaarProgressLabel.textContent = `Udhaar: ${formatRs(totals.totalUdhaar)}`;
+    if (receivedProgressLabel) receivedProgressLabel.textContent = `Vasool: ${formatRs(totals.totalReceived)}`;
+
+    const remaining = totals.remaining;
+    if (remaining > 0) {
+      if (netLabelEl) netLabelEl.textContent = 'Aap ne LENA hai (Net Udhaar)';
+      if (netAmountEl) netAmountEl.textContent = formatRs(remaining);
+      if (netBadgeEl) {
+        netBadgeEl.textContent = 'Net Take';
+        netBadgeEl.className = 'hero-badge badge-take';
+      }
+    } else if (remaining < 0) {
+      if (netLabelEl) netLabelEl.textContent = 'Aap ne DENA hai (Net Advance)';
+      if (netAmountEl) netAmountEl.textContent = formatRs(Math.abs(remaining));
+      if (netBadgeEl) {
+        netBadgeEl.textContent = 'Net Give';
+        netBadgeEl.className = 'hero-badge badge-give';
+      }
+    } else {
+      if (netLabelEl) netLabelEl.textContent = 'Baqaya Zero (Settled ✅)';
+      if (netAmountEl) netAmountEl.textContent = 'Rs. 0';
+      if (netBadgeEl) {
+        netBadgeEl.textContent = 'Settled';
+        netBadgeEl.className = 'hero-badge';
+      }
+    }
+
+    // Calculate progress ratio
+    const totalFlow = totals.totalUdhaar + totals.totalReceived;
+    let percentage = 50;
+    if (totalFlow > 0) {
+      percentage = Math.min(100, Math.max(5, (totals.totalReceived / totalFlow) * 100));
+    }
+    if (progressFill) {
+      progressFill.style.width = `${percentage}%`;
+      if (remaining > 0) {
+        progressFill.classList.remove('fill-danger');
+      } else if (remaining < 0) {
+        progressFill.classList.add('fill-danger');
+      }
+    }
+
+    const searchTerm = (document.getElementById('dash-search-input')?.value || '').trim().toLowerCase();
+    const dashFilter = appState.activeDashFilter || 'all';
     const emptyState = document.getElementById('dash-empty-state');
     const customerListEl = document.getElementById('dash-customer-list');
 
     if (appState.customers.length === 0) {
-      emptyState.classList.remove('hidden');
-      customerListEl.classList.add('hidden');
+      if (emptyState) emptyState.classList.remove('hidden');
+      if (customerListEl) customerListEl.classList.add('hidden');
       return;
     }
 
-    const filtered = appState.customers.filter(c => 
+    let filtered = appState.customers.filter(c => 
       c.name.toLowerCase().includes(searchTerm) || c.phone.includes(searchTerm)
     );
 
+    if (dashFilter === 'due') {
+      filtered = filtered.filter(c => getCustomerBalance(c.id).remaining > 0);
+    } else if (dashFilter === 'paid') {
+      filtered = filtered.filter(c => getCustomerBalance(c.id).remaining <= 0);
+    }
+
+    if (countBadgeEl) countBadgeEl.textContent = filtered.length;
+
     if (filtered.length === 0) {
-      emptyState.classList.remove('hidden');
-      customerListEl.classList.add('hidden');
+      if (emptyState) emptyState.classList.remove('hidden');
+      if (customerListEl) customerListEl.classList.add('hidden');
     } else {
-      emptyState.classList.add('hidden');
-      customerListEl.classList.remove('hidden');
+      if (emptyState) emptyState.classList.add('hidden');
+      if (customerListEl) customerListEl.classList.remove('hidden');
       renderCustomerCards(customerListEl, filtered);
     }
   }
@@ -1718,6 +1804,33 @@
     document.getElementById('dash-search-input')?.addEventListener('input', renderDashboard);
     document.getElementById('cust-search-input')?.addEventListener('input', renderCustomersScreen);
     document.getElementById('select-cust-search')?.addEventListener('input', renderCustomerPickerList);
+
+    // Home Dashboard Filter Chips
+    document.querySelectorAll('[data-dash-filter]').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('[data-dash-filter]').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        appState.activeDashFilter = chip.dataset.dashFilter;
+        renderDashboard();
+      });
+    });
+
+    // Header Search Icon Click
+    document.getElementById('btn-header-search')?.addEventListener('click', () => {
+      const searchInput = document.getElementById('dash-search-input');
+      if (searchInput) {
+        searchInput.focus();
+        searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+
+    // Target Screen Navigation Triggers
+    document.querySelectorAll('[data-target-screen]').forEach(tile => {
+      tile.addEventListener('click', () => {
+        const targetScreen = tile.dataset.targetScreen;
+        if (targetScreen) showScreen(targetScreen);
+      });
+    });
 
     // Customer Filter Chips
     document.querySelectorAll('[data-filter]').forEach(chip => {
