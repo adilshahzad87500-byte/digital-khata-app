@@ -234,6 +234,9 @@
     activeDashFilter: 'all',
     activeCustomerFilter: 'all',
     activeReportTimeframe: 'all',
+    customReportDateRange: { startDate: '', endDate: '' },
+    reportTxTypeFilter: 'all',
+    reportSearchTerm: '',
     quickActionTarget: null // 'udhaar' or 'payment' when using quick action picker
   };
 
@@ -745,57 +748,21 @@
 
     // Hero Net Banner Calculations
     const netAmountEl = document.getElementById('dash-net-amount');
-    const netLabelEl = document.getElementById('dash-net-status-label');
-    const netBadgeEl = document.getElementById('dash-net-badge');
-    const progressFill = document.getElementById('dash-net-progress-fill');
     const custCountBadge = document.getElementById('dash-active-customers-badge');
     const countBadgeEl = document.getElementById('dash-customer-count-badge');
-    const udhaarProgressLabel = document.getElementById('dash-progress-udhaar-label');
-    const receivedProgressLabel = document.getElementById('dash-progress-received-label');
 
     const custCount = appState.customers ? appState.customers.length : 0;
     if (custCountBadge) custCountBadge.textContent = `${custCount} Customers`;
     if (countBadgeEl) countBadgeEl.textContent = custCount;
 
-    if (udhaarProgressLabel) udhaarProgressLabel.textContent = `Udhaar: ${formatRs(totals.totalUdhaar)}`;
-    if (receivedProgressLabel) receivedProgressLabel.textContent = `Vasool: ${formatRs(totals.totalReceived)}`;
-
     const remaining = totals.remaining;
-    if (remaining > 0) {
-      if (netLabelEl) netLabelEl.textContent = 'Aap ne LENA hai (Net Udhaar)';
-      if (netAmountEl) netAmountEl.textContent = formatRs(remaining);
-      if (netBadgeEl) {
-        netBadgeEl.textContent = 'Net Take';
-        netBadgeEl.className = 'hero-badge badge-take';
-      }
-    } else if (remaining < 0) {
-      if (netLabelEl) netLabelEl.textContent = 'Aap ne DENA hai (Net Advance)';
-      if (netAmountEl) netAmountEl.textContent = formatRs(Math.abs(remaining));
-      if (netBadgeEl) {
-        netBadgeEl.textContent = 'Net Give';
-        netBadgeEl.className = 'hero-badge badge-give';
-      }
-    } else {
-      if (netLabelEl) netLabelEl.textContent = 'Baqaya Zero (Settled ✅)';
-      if (netAmountEl) netAmountEl.textContent = 'Rs. 0';
-      if (netBadgeEl) {
-        netBadgeEl.textContent = 'Settled';
-        netBadgeEl.className = 'hero-badge';
-      }
-    }
-
-    // Calculate progress ratio
-    const totalFlow = totals.totalUdhaar + totals.totalReceived;
-    let percentage = 50;
-    if (totalFlow > 0) {
-      percentage = Math.min(100, Math.max(5, (totals.totalReceived / totalFlow) * 100));
-    }
-    if (progressFill) {
-      progressFill.style.width = `${percentage}%`;
+    if (netAmountEl) {
       if (remaining > 0) {
-        progressFill.classList.remove('fill-danger');
+        netAmountEl.textContent = formatRs(remaining);
       } else if (remaining < 0) {
-        progressFill.classList.add('fill-danger');
+        netAmountEl.textContent = formatRs(Math.abs(remaining));
+      } else {
+        netAmountEl.textContent = 'Rs. 0';
       }
     }
 
@@ -1033,11 +1000,387 @@
     }
   }
 
-  // 4. REPORTS SCREEN
+  // 4. REPORTS SCREEN & ADVANCED FINANCIAL ANALYTICS
   function renderReportsScreen() {
-    const timeframe = appState.activeReportTimeframe;
+    const timeframe = appState.activeReportTimeframe || 'all';
     let filteredTxs = [...appState.transactions];
+    const todayStr = getTodayString();
+    const now = new Date();
 
+    let bannerLabel = 'All Time Summary';
+
+    if (timeframe === 'today') {
+      filteredTxs = filteredTxs.filter(t => t.date === todayStr);
+      bannerLabel = `Today (${formatDate(todayStr)})`;
+    } else if (timeframe === 'week') {
+      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const oneWeekAgoStr = oneWeekAgo.toISOString().split('T')[0];
+      filteredTxs = filteredTxs.filter(t => t.date >= oneWeekAgoStr && t.date <= todayStr);
+      bannerLabel = `This Week (${formatDate(oneWeekAgoStr)} – ${formatDate(todayStr)})`;
+    } else if (timeframe === 'month') {
+      const currentMonthPrefix = now.toISOString().slice(0, 7); // YYYY-MM
+      filteredTxs = filteredTxs.filter(t => (t.date || '').startsWith(currentMonthPrefix));
+      bannerLabel = `This Month (${now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })})`;
+    } else if (timeframe === 'year') {
+      const currentYearPrefix = now.getFullYear().toString();
+      filteredTxs = filteredTxs.filter(t => (t.date || '').startsWith(currentYearPrefix));
+      bannerLabel = `This Year (${currentYearPrefix})`;
+    } else if (timeframe === 'custom') {
+      const { startDate, endDate } = appState.customReportDateRange || {};
+      if (startDate && endDate) {
+        filteredTxs = filteredTxs.filter(t => t.date >= startDate && t.date <= endDate);
+        bannerLabel = `${formatDate(startDate)} – ${formatDate(endDate)}`;
+      } else {
+        bannerLabel = 'Custom Date Range';
+      }
+    } else {
+      bannerLabel = 'Showing All Time Summary';
+    }
+
+    // Update banner label
+    const bannerLabelEl = document.getElementById('rep-date-banner-label');
+    if (bannerLabelEl) bannerLabelEl.textContent = bannerLabel;
+
+    // Update Print Header Details for PDF/Print Statement
+    const printBizName = document.getElementById('print-biz-name');
+    const printBizMeta = document.getElementById('print-biz-meta');
+    const printDateRange = document.getElementById('print-date-range');
+    const printGenDate = document.getElementById('print-gen-date');
+    if (printBizName) printBizName.textContent = appState.business.name || 'Digital Khata';
+    if (printBizMeta) printBizMeta.textContent = `${appState.business.phone || ''} ${appState.business.address ? '• ' + appState.business.address : ''}`;
+    if (printDateRange) printDateRange.textContent = `Period: ${bannerLabel}`;
+    if (printGenDate) {
+      const d = new Date();
+      printGenDate.textContent = `Generated on: ${d.toLocaleDateString('en-GB')} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    }
+
+    // Calculations
+    const totals = getGlobalTotals(filteredTxs);
+    const udhaarTxs = filteredTxs.filter(t => (t.type || '').toUpperCase() === 'UDHAAR');
+    const receivedTxs = filteredTxs.filter(t => (t.type || '').toUpperCase() === 'PAYMENT');
+
+    // Summary Cards
+    const elTotalUdhaar = document.getElementById('rep-total-udhaar');
+    const elTotalReceived = document.getElementById('rep-total-received');
+    const elRemaining = document.getElementById('rep-remaining');
+    const elUdhaarCount = document.getElementById('rep-udhaar-count');
+    const elReceivedCount = document.getElementById('rep-received-count');
+    const elNetStatus = document.getElementById('rep-net-status');
+
+    if (elTotalUdhaar) elTotalUdhaar.textContent = formatRs(totals.totalUdhaar);
+    if (elTotalReceived) elTotalReceived.textContent = formatRs(totals.totalReceived);
+    if (elRemaining) elRemaining.textContent = formatRs(totals.remaining);
+    if (elUdhaarCount) elUdhaarCount.textContent = `${udhaarTxs.length} ${udhaarTxs.length === 1 ? 'entry' : 'entries'}`;
+    if (elReceivedCount) elReceivedCount.textContent = `${receivedTxs.length} ${receivedTxs.length === 1 ? 'entry' : 'entries'}`;
+
+    if (elNetStatus) {
+      if (totals.remaining > 0) {
+        elNetStatus.textContent = 'Outstanding Due';
+        elNetStatus.style.color = '#D97706';
+      } else if (totals.remaining < 0) {
+        elNetStatus.textContent = 'Advance / Surplus';
+        elNetStatus.style.color = '#059669';
+      } else {
+        elNetStatus.textContent = 'Settled Barabar ✓';
+        elNetStatus.style.color = '#059669';
+      }
+    }
+
+    // Health / Recovery Rate
+    let recoveryPct = 100;
+    if (totals.totalUdhaar > 0) {
+      recoveryPct = Math.round((totals.totalReceived / totals.totalUdhaar) * 100);
+    } else if (totals.totalUdhaar === 0 && totals.totalReceived === 0) {
+      recoveryPct = 100;
+    }
+
+    const elRecPct = document.getElementById('rep-recovery-pct');
+    const elHealthBar = document.getElementById('rep-health-bar');
+    const elHealthBadge = document.getElementById('rep-health-badge');
+    const elAvgTx = document.getElementById('rep-avg-tx');
+
+    if (elRecPct) elRecPct.textContent = `${recoveryPct}%`;
+    if (elHealthBar) elHealthBar.style.width = `${Math.min(100, Math.max(0, recoveryPct))}%`;
+
+    if (elHealthBadge) {
+      elHealthBadge.className = 'health-status-badge';
+      if (recoveryPct >= 80) {
+        elHealthBadge.textContent = '✓ Excellent Wasool (A+)';
+      } else if (recoveryPct >= 50) {
+        elHealthBadge.textContent = '⚠️ Moderate Recovery (B)';
+        elHealthBadge.classList.add('badge-warn');
+      } else {
+        elHealthBadge.textContent = '🚨 Due High - Follow Up';
+        elHealthBadge.classList.add('badge-danger');
+      }
+    }
+
+    const avgTxVal = filteredTxs.length > 0 ? Math.round((totals.totalUdhaar + totals.totalReceived) / filteredTxs.length) : 0;
+    if (elAvgTx) elAvgTx.textContent = `Avg Tx: ${formatRs(avgTxVal)}`;
+
+    // Toggle Empty State vs Charts Wrapper
+    const emptyState = document.getElementById('rep-empty-state');
+    const chartsWrapper = document.getElementById('rep-charts-wrapper');
+
+    if (filteredTxs.length === 0) {
+      if (emptyState) emptyState.classList.remove('hidden');
+      if (chartsWrapper) chartsWrapper.classList.add('hidden');
+      return;
+    }
+
+    if (emptyState) emptyState.classList.add('hidden');
+    if (chartsWrapper) chartsWrapper.classList.remove('hidden');
+
+    // 1. Ratio Comparison Bar
+    const totalVolume = totals.totalUdhaar + totals.totalReceived;
+    let udhaarPct = 50;
+    let receivedPct = 50;
+    if (totalVolume > 0) {
+      udhaarPct = Math.round((totals.totalUdhaar / totalVolume) * 100);
+      receivedPct = 100 - udhaarPct;
+    }
+
+    const elRatioUdhaar = document.getElementById('rep-ratio-udhaar-fill');
+    const elRatioRec = document.getElementById('rep-ratio-received-fill');
+    const elSplitRatio = document.getElementById('rep-chart-split-ratio');
+    const elLegUdhaar = document.getElementById('rep-legend-udhaar');
+    const elLegRec = document.getElementById('rep-legend-received');
+
+    if (elRatioUdhaar) elRatioUdhaar.style.width = `${udhaarPct}%`;
+    if (elRatioRec) elRatioRec.style.width = `${receivedPct}%`;
+    if (elSplitRatio) elSplitRatio.textContent = `${udhaarPct}% Udhaar / ${receivedPct}% Wasool`;
+    if (elLegUdhaar) elLegUdhaar.textContent = formatRs(totals.totalUdhaar);
+    if (elLegRec) elLegRec.textContent = formatRs(totals.totalReceived);
+
+    // 2. Activity Trend Chart
+    renderReportsTrendChart(filteredTxs);
+
+    // 3. Top Debtors
+    renderReportsTopDebtors();
+
+    // 4. Period Ledger
+    renderReportsLedger(filteredTxs);
+  }
+
+  // Reports Sub-component: Activity Trend Bar Chart
+  function renderReportsTrendChart(filteredTxs) {
+    const container = document.getElementById('rep-trend-bars-list');
+    if (!container) return;
+    container.innerHTML = '';
+
+    // Group transactions by date
+    const dateMap = {};
+    filteredTxs.forEach(t => {
+      const d = t.date || getTodayString();
+      if (!dateMap[d]) {
+        dateMap[d] = { udhaar: 0, received: 0 };
+      }
+      const amt = parseFloat(t.amount) || 0;
+      if ((t.type || '').toUpperCase() === 'UDHAAR') {
+        dateMap[d].udhaar += amt;
+      } else {
+        dateMap[d].received += amt;
+      }
+    });
+
+    let sortedDates = Object.keys(dateMap).sort();
+    // If more than 12 dates, take the most recent 12 to maintain crisp layout
+    if (sortedDates.length > 12) {
+      sortedDates = sortedDates.slice(-12);
+    }
+
+    const maxDayVal = Math.max(...sortedDates.map(d => Math.max(dateMap[d].udhaar, dateMap[d].received)), 1);
+
+    sortedDates.forEach(dateStr => {
+      const data = dateMap[dateStr];
+      const col = document.createElement('div');
+      col.className = 'trend-bar-column';
+
+      const uHeight = Math.max(3, Math.round((data.udhaar / maxDayVal) * 90));
+      const rHeight = Math.max(3, Math.round((data.received / maxDayVal) * 90));
+
+      const dObj = new Date(dateStr);
+      const label = isNaN(dObj.getTime()) ? dateStr.slice(5) : dObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+
+      col.innerHTML = `
+        <div class="trend-bar-duo">
+          <div class="trend-bar-sub sub-udhaar" style="height: ${data.udhaar > 0 ? uHeight : 3}px;" data-tooltip="Udhaar: ${formatRs(data.udhaar)}"></div>
+          <div class="trend-bar-sub sub-received" style="height: ${data.received > 0 ? rHeight : 3}px;" data-tooltip="Received: ${formatRs(data.received)}"></div>
+        </div>
+        <span class="trend-bar-date-label">${label}</span>
+      `;
+      container.appendChild(col);
+    });
+  }
+
+  // Reports Sub-component: Top Debtors
+  function renderReportsTopDebtors() {
+    const listEl = document.getElementById('rep-top-debtors-list');
+    const countEl = document.getElementById('rep-top-debtors-count');
+    if (!listEl) return;
+    listEl.innerHTML = '';
+
+    const debtors = [];
+    appState.customers.forEach(c => {
+      const bal = getCustomerBalance(c.id);
+      if (bal.remaining > 0) {
+        debtors.push({
+          customer: c,
+          remaining: bal.remaining
+        });
+      }
+    });
+
+    debtors.sort((a, b) => b.remaining - a.remaining);
+    const topDebtors = debtors.slice(0, 5);
+
+    if (countEl) countEl.textContent = `${topDebtors.length} Customers`;
+
+    if (topDebtors.length === 0) {
+      listEl.innerHTML = `
+        <div style="text-align: center; padding: 16px 8px; color: var(--text-muted); font-size: 13px;">
+          🎉 <strong>Sab Hisab Barabar!</strong> No pending debtors with due balances.
+        </div>
+      `;
+      return;
+    }
+
+    topDebtors.forEach((item, idx) => {
+      const card = document.createElement('div');
+      card.className = 'top-debtor-card';
+      const c = item.customer;
+
+      card.innerHTML = `
+        <div class="debtor-left">
+          <div class="debtor-rank">#${idx + 1}</div>
+          <div class="debtor-info">
+            <span class="debtor-name">${escapeHtml(c.name)}</span>
+            <span class="debtor-phone">${escapeHtml(c.phone)}</span>
+          </div>
+        </div>
+        <div class="debtor-right">
+          <span class="debtor-balance">${formatRs(item.remaining)}</span>
+          <button class="btn-debtor-wa" title="Send WhatsApp Reminder" data-cust-id="${c.id}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.664-.699c.974.531 1.777.818 2.796.818 3.182 0 5.768-2.587 5.768-5.767 0-3.181-2.586-5.768-5.768-5.768zm3.393 8.358c-.144.405-.837.774-1.17.822-.312.043-.687.067-2.029-.488-1.579-.652-2.588-2.247-2.668-2.353-.077-.107-.639-.851-.639-1.624 0-.773.407-1.155.552-1.312.145-.157.318-.196.425-.196.107 0 .213.002.306.007.101.005.236-.039.369.281.144.347.491 1.196.534 1.284.043.088.072.19.014.304-.058.116-.087.188-.173.289l-.26.305c-.087.098-.177.204-.076.377.101.173.451.744.968 1.205.666.593 1.228.777 1.402.864.174.087.275.072.376-.044.102-.115.434-.505.549-.679.116-.174.232-.145.391-.087.159.058 1.011.477 1.184.564.173.087.289.13.332.203.043.072.043.419-.101.824z"/>
+            </svg>
+          </button>
+        </div>
+      `;
+
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.btn-debtor-wa')) return;
+        appState.activeCustomerId = c.id;
+        showScreen('screen-customer-details');
+      });
+
+      const btnWa = card.querySelector('.btn-debtor-wa');
+      if (btnWa) {
+        btnWa.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const cleanPhone = c.phone.replace(/[^0-9]/g, '');
+          let intlPhone = cleanPhone;
+          if (intlPhone.startsWith('0')) {
+            intlPhone = '92' + intlPhone.slice(1);
+          }
+          const bizName = appState.business.name || 'Our Shop';
+          const msg = `Assalam-o-Alaikum ${c.name},\n\nAap ki taraf ${bizName} ka Rs. ${item.remaining.toLocaleString('en-PK')} ka baqaya hisab pending hai.\nBarah-e-karam jald ada farmayein.\n\nShukriya!\n${bizName}`;
+          const waUrl = `https://wa.me/${intlPhone}?text=${encodeURIComponent(msg)}`;
+          window.open(waUrl, '_blank');
+        });
+      }
+
+      listEl.appendChild(card);
+    });
+  }
+
+  // Reports Sub-component: Period Transactions Ledger
+  function renderReportsLedger(filteredTxs) {
+    const listEl = document.getElementById('rep-transactions-list');
+    const countEl = document.getElementById('rep-ledger-total-count');
+    if (!listEl) return;
+    listEl.innerHTML = '';
+
+    const searchTerm = (appState.reportSearchTerm || '').trim().toLowerCase();
+    const typeFilter = appState.reportTxTypeFilter || 'all';
+
+    // Filter by type
+    let txs = [...filteredTxs];
+    if (typeFilter === 'udhaar') {
+      txs = txs.filter(t => (t.type || '').toUpperCase() === 'UDHAAR');
+    } else if (typeFilter === 'payment') {
+      txs = txs.filter(t => (t.type || '').toUpperCase() === 'PAYMENT');
+    }
+
+    // Filter by search
+    if (searchTerm) {
+      txs = txs.filter(t => {
+        const cust = appState.customers.find(c => c.id === t.customerId);
+        const custName = (cust ? cust.name : '').toLowerCase();
+        const desc = (t.description || '').toLowerCase();
+        return custName.includes(searchTerm) || desc.includes(searchTerm);
+      });
+    }
+
+    // Sort recent first
+    txs.sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date));
+
+    if (countEl) countEl.textContent = `${txs.length} items`;
+
+    if (txs.length === 0) {
+      listEl.innerHTML = `
+        <div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px;">
+          No matching transactions in this view.
+        </div>
+      `;
+      return;
+    }
+
+    txs.forEach(t => {
+      const isUdhaar = (t.type || '').toUpperCase() === 'UDHAAR';
+      const cust = appState.customers.find(c => c.id === t.customerId);
+      const custName = cust ? cust.name : 'Unknown Customer';
+
+      const item = document.createElement('div');
+      item.className = 'rep-tx-item';
+      item.style.cursor = 'pointer';
+
+      item.innerHTML = `
+        <div class="rep-tx-left">
+          <div class="rep-tx-icon-badge ${isUdhaar ? 'badge-is-udhaar' : 'badge-is-payment'}">
+            ${isUdhaar ? '↑' : '↓'}
+          </div>
+          <div class="rep-tx-details">
+            <span class="rep-tx-customer">${escapeHtml(custName)}</span>
+            <div class="rep-tx-meta">
+              <span>${formatDate(t.date)}</span>
+              <span>•</span>
+              <span>${escapeHtml(t.description || (isUdhaar ? 'Udhaar' : 'Payment'))}</span>
+            </div>
+          </div>
+        </div>
+        <div class="rep-tx-right">
+          <span class="rep-tx-amount ${isUdhaar ? 'amount-udhaar' : 'amount-payment'}">
+            ${isUdhaar ? '+' : '-'} ${formatRs(t.amount)}
+          </span>
+        </div>
+      `;
+
+      item.addEventListener('click', () => {
+        if (cust) {
+          appState.activeCustomerId = cust.id;
+          showScreen('screen-customer-details');
+        }
+      });
+
+      listEl.appendChild(item);
+    });
+  }
+
+  // Reports Export: CSV Generation
+  function handleExportReportCSV() {
+    const timeframe = appState.activeReportTimeframe || 'all';
+    let filteredTxs = [...appState.transactions];
     const todayStr = getTodayString();
     const now = new Date();
 
@@ -1045,34 +1388,124 @@
       filteredTxs = filteredTxs.filter(t => t.date === todayStr);
     } else if (timeframe === 'week') {
       const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      filteredTxs = filteredTxs.filter(t => new Date(t.date) >= oneWeekAgo);
+      const oneWeekAgoStr = oneWeekAgo.toISOString().split('T')[0];
+      filteredTxs = filteredTxs.filter(t => t.date >= oneWeekAgoStr && t.date <= todayStr);
     } else if (timeframe === 'month') {
-      const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      filteredTxs = filteredTxs.filter(t => new Date(t.date) >= oneMonthAgo);
+      const currentMonthPrefix = now.toISOString().slice(0, 7);
+      filteredTxs = filteredTxs.filter(t => (t.date || '').startsWith(currentMonthPrefix));
+    } else if (timeframe === 'year') {
+      const currentYearPrefix = now.getFullYear().toString();
+      filteredTxs = filteredTxs.filter(t => (t.date || '').startsWith(currentYearPrefix));
+    } else if (timeframe === 'custom') {
+      const { startDate, endDate } = appState.customReportDateRange || {};
+      if (startDate && endDate) {
+        filteredTxs = filteredTxs.filter(t => t.date >= startDate && t.date <= endDate);
+      }
+    }
+
+    if (filteredTxs.length === 0) {
+      alert('No transactions found in this period to export.');
+      return;
+    }
+
+    let csvContent = 'data:text/csv;charset=utf-8,';
+    csvContent += 'Date,Type,Customer Name,Phone,Description,Amount (PKR)\r\n';
+
+    filteredTxs.forEach(t => {
+      const cust = appState.customers.find(c => c.id === t.customerId);
+      const custName = cust ? cust.name.replace(/"/g, '""') : 'Unknown';
+      const custPhone = cust ? cust.phone.replace(/"/g, '""') : '';
+      const desc = (t.description || '').replace(/"/g, '""');
+      const isUdhaar = (t.type || '').toUpperCase() === 'UDHAAR';
+
+      csvContent += `"${t.date}","${isUdhaar ? 'UDHAAR' : 'PAYMENT'}","${custName}","${custPhone}","${desc}",${t.amount}\r\n`;
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `digital_khata_report_${timeframe}_${todayStr}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    showToast('📊 CSV Report downloaded successfully!');
+  }
+
+  // Reports Export: WhatsApp Formatted Share
+  function handleShareReportWhatsApp() {
+    const timeframe = appState.activeReportTimeframe || 'all';
+    let filteredTxs = [...appState.transactions];
+    const todayStr = getTodayString();
+    const now = new Date();
+    let bannerLabel = 'All Time Summary';
+
+    if (timeframe === 'today') {
+      filteredTxs = filteredTxs.filter(t => t.date === todayStr);
+      bannerLabel = `Today (${formatDate(todayStr)})`;
+    } else if (timeframe === 'week') {
+      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const oneWeekAgoStr = oneWeekAgo.toISOString().split('T')[0];
+      filteredTxs = filteredTxs.filter(t => t.date >= oneWeekAgoStr && t.date <= todayStr);
+      bannerLabel = `This Week (${formatDate(oneWeekAgoStr)} – ${formatDate(todayStr)})`;
+    } else if (timeframe === 'month') {
+      const currentMonthPrefix = now.toISOString().slice(0, 7);
+      filteredTxs = filteredTxs.filter(t => (t.date || '').startsWith(currentMonthPrefix));
+      bannerLabel = `This Month (${now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })})`;
+    } else if (timeframe === 'year') {
+      const currentYearPrefix = now.getFullYear().toString();
+      filteredTxs = filteredTxs.filter(t => (t.date || '').startsWith(currentYearPrefix));
+      bannerLabel = `This Year (${currentYearPrefix})`;
+    } else if (timeframe === 'custom') {
+      const { startDate, endDate } = appState.customReportDateRange || {};
+      if (startDate && endDate) {
+        filteredTxs = filteredTxs.filter(t => t.date >= startDate && t.date <= endDate);
+        bannerLabel = `${formatDate(startDate)} – ${formatDate(endDate)}`;
+      }
     }
 
     const totals = getGlobalTotals(filteredTxs);
-    document.getElementById('rep-total-udhaar').textContent = formatRs(totals.totalUdhaar);
-    document.getElementById('rep-total-received').textContent = formatRs(totals.totalReceived);
-    document.getElementById('rep-remaining').textContent = formatRs(totals.remaining);
-
-    const emptyState = document.getElementById('rep-empty-state');
-    const chartCard = document.getElementById('rep-chart-wrapper');
-
-    if (filteredTxs.length === 0) {
-      emptyState.classList.remove('hidden');
-      chartCard.classList.add('hidden');
-    } else {
-      emptyState.classList.add('hidden');
-      chartCard.classList.remove('hidden');
-
-      const maxVal = Math.max(totals.totalUdhaar, totals.totalReceived, 1);
-      const udhaarPct = Math.min(100, Math.max(5, (totals.totalUdhaar / maxVal) * 100));
-      const recPct = Math.min(100, Math.max(5, (totals.totalReceived / maxVal) * 100));
-
-      document.getElementById('bar-udhaar-fill').style.height = `${udhaarPct}%`;
-      document.getElementById('bar-received-fill').style.height = `${recPct}%`;
+    let recoveryPct = 100;
+    if (totals.totalUdhaar > 0) {
+      recoveryPct = Math.round((totals.totalReceived / totals.totalUdhaar) * 100);
     }
+
+    const bizName = appState.business.name || 'Digital Khata';
+    const msg = 
+`📊 *DIGITAL KHATA - HISAB REPORT*
+━━━━━━━━━━━━━━━━━━━━
+🏬 *Dukan/Business:* ${bizName}
+📅 *Muddat:* ${bannerLabel}
+━━━━━━━━━━━━━━━━━━━━
+🔴 *Kul Udhaar Given:* ${formatRs(totals.totalUdhaar)}
+🟢 *Kul Wasool Received:* ${formatRs(totals.totalReceived)}
+⚖️ *Remaining Baqaya:* ${formatRs(totals.remaining)}
+📈 *Collection Rate:* ${recoveryPct}%
+📝 *Transactions Count:* ${filteredTxs.length}
+━━━━━━━━━━━━━━━━━━━━
+Generated by *Digital Khata App* 📱`;
+
+    const waUrl = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    window.open(waUrl, '_blank');
+    showToast('📱 Opening WhatsApp to share report...');
+  }
+
+  // Reports Print / PDF Trigger
+  function handlePrintReport() {
+    window.print();
+  }
+
+  // Custom Date Modal Handler
+  function openCustomDateFilterModal() {
+    const modal = document.getElementById('modal-custom-date-filter');
+    if (!modal) return;
+    const startInput = document.getElementById('input-rep-start-date');
+    const endInput = document.getElementById('input-rep-end-date');
+
+    const todayStr = getTodayString();
+    if (startInput) startInput.value = (appState.customReportDateRange && appState.customReportDateRange.startDate) || todayStr;
+    if (endInput) endInput.value = (appState.customReportDateRange && appState.customReportDateRange.endDate) || todayStr;
+
+    modal.classList.remove('hidden');
   }
 
   // 5. SETTINGS SCREEN
@@ -1848,6 +2281,111 @@
         document.querySelectorAll('[data-report-time]').forEach(c => c.classList.remove('active'));
         chip.classList.add('active');
         appState.activeReportTimeframe = chip.dataset.reportTime;
+        if (chip.dataset.reportTime === 'custom') {
+          openCustomDateFilterModal();
+        } else {
+          renderReportsScreen();
+        }
+      });
+    });
+
+    // Calendar Icon & Banner Change Buttons
+    document.getElementById('btn-reports-cal-icon')?.addEventListener('click', openCustomDateFilterModal);
+    document.getElementById('btn-banner-change-date')?.addEventListener('click', openCustomDateFilterModal);
+
+    // Print / PDF Actions
+    document.getElementById('btn-reports-print-top')?.addEventListener('click', handlePrintReport);
+    document.getElementById('btn-rep-print-action')?.addEventListener('click', handlePrintReport);
+
+    // Export CSV Action
+    document.getElementById('btn-rep-csv-action')?.addEventListener('click', handleExportReportCSV);
+
+    // Share WhatsApp Action
+    document.getElementById('btn-rep-share-whatsapp')?.addEventListener('click', handleShareReportWhatsApp);
+
+    // Quick Date Presets in Custom Date Modal
+    document.querySelectorAll('.btn-date-preset').forEach(presetBtn => {
+      presetBtn.addEventListener('click', () => {
+        document.querySelectorAll('.btn-date-preset').forEach(b => b.classList.remove('active'));
+        presetBtn.classList.add('active');
+
+        const preset = presetBtn.dataset.preset;
+        const now = new Date();
+        const todayStr = getTodayString();
+        const startInput = document.getElementById('input-rep-start-date');
+        const endInput = document.getElementById('input-rep-end-date');
+
+        if (!startInput || !endInput) return;
+
+        if (preset === 'today') {
+          startInput.value = todayStr;
+          endInput.value = todayStr;
+        } else if (preset === 'yesterday') {
+          const y = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+          const yStr = y.toISOString().split('T')[0];
+          startInput.value = yStr;
+          endInput.value = yStr;
+        } else if (preset === 'last7') {
+          const d7 = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          startInput.value = d7.toISOString().split('T')[0];
+          endInput.value = todayStr;
+        } else if (preset === 'last30') {
+          const d30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          startInput.value = d30.toISOString().split('T')[0];
+          endInput.value = todayStr;
+        } else if (preset === 'thisMonth') {
+          const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+          startInput.value = firstDay;
+          endInput.value = todayStr;
+        } else if (preset === 'lastMonth') {
+          const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0];
+          const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().split('T')[0];
+          startInput.value = firstDayLastMonth;
+          endInput.value = lastDayLastMonth;
+        }
+      });
+    });
+
+    // Apply Custom Date Filter Form
+    document.getElementById('form-custom-date-filter')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const startVal = document.getElementById('input-rep-start-date').value;
+      const endVal = document.getElementById('input-rep-end-date').value;
+
+      if (!startVal || !endVal) {
+        alert('Please select both start and end dates.');
+        return;
+      }
+
+      if (startVal > endVal) {
+        alert('Start Date cannot be greater than End Date.');
+        return;
+      }
+
+      appState.customReportDateRange = { startDate: startVal, endDate: endVal };
+      appState.activeReportTimeframe = 'custom';
+
+      // Update chip active states
+      document.querySelectorAll('[data-report-time]').forEach(c => c.classList.remove('active'));
+      document.getElementById('btn-chip-custom-date')?.classList.add('active');
+
+      closeAllModals();
+      renderReportsScreen();
+      showToast(`Filtered: ${formatDate(startVal)} to ${formatDate(endVal)}`);
+    });
+
+    // Ledger Search Input
+    document.getElementById('rep-ledger-search')?.addEventListener('input', (e) => {
+      appState.reportSearchTerm = e.target.value;
+      renderReportsScreen();
+    });
+
+    // Ledger Type Filter Chips
+    document.querySelectorAll('[data-rep-tx-type]').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('[data-rep-tx-type]').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        appState.reportTxTypeFilter = chip.dataset.repTxType;
         renderReportsScreen();
       });
     });

@@ -795,10 +795,20 @@ html, body {
   height: 26px;
 }
 
+.ring-currency-text {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-green);
+  letter-spacing: -0.5px;
+  line-height: 1;
+  user-select: none;
+}
+
 .floating-card-main-info {
   flex: 1;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 3px;
   min-width: 0;
 }
@@ -2046,67 +2056,288 @@ html, body {
 }
 
 /* ==========================================
-   REPORTS & SETTINGS
+   REPORTS & ADVANCED FINANCIAL ANALYTICS
    ========================================== */
+.reports-filter-chips {
+  display: flex;
+  overflow-x: auto;
+  gap: 8px;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+.reports-filter-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.chip-custom-date {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Active Date Range Banner */
+.report-date-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.date-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.date-banner-icon {
+  font-size: 14px;
+}
+
+.date-banner-action {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.date-banner-action:hover {
+  background: var(--color-primary-light);
+}
+
+/* Summary Card Subtext */
+.card-subtext {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  display: block;
+}
+
+/* Financial Health / Recovery Card */
+.report-health-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.health-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.health-title-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.health-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.health-status-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  width: fit-content;
+}
+
+.health-status-badge.badge-warn {
+  background: rgba(245, 158, 11, 0.14);
+  color: #D97706;
+}
+
+.health-status-badge.badge-danger {
+  background: rgba(239, 68, 68, 0.14);
+  color: #DC2626;
+}
+
+.health-percentage {
+  font-size: 20px;
+  font-weight: 800;
+  color: #10B981;
+}
+
+.health-progress-track {
+  width: 100%;
+  height: 10px;
+  background: var(--bg-input);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.health-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #10B981, #059669);
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
+.health-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+/* Quick Actions Toolbar */
+.report-actions-toolbar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.report-btn-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.report-btn-action:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.report-btn-action:active {
+  transform: translateY(0);
+}
+
+.btn-rep-print:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btn-rep-csv:hover {
+  border-color: #2563EB;
+  color: #2563EB;
+}
+
+.btn-rep-whatsapp {
+  background: rgba(37, 211, 102, 0.08);
+  border-color: rgba(37, 211, 102, 0.3);
+  color: #15803D;
+}
+
+.btn-rep-whatsapp:hover {
+  background: rgba(37, 211, 102, 0.16);
+  border-color: #25D366;
+  color: #166534;
+}
+
+/* Report Cards & Charts */
 .report-chart-card {
   background-color: var(--bg-card);
-  padding: 20px;
+  padding: 18px;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
 }
 
+.chart-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
 .chart-card-title {
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 700;
   color: var(--text-main);
-  margin-bottom: 20px;
+  margin: 0;
 }
 
-.chart-bars-container {
-  display: flex;
-  justify-content: space-around;
-  align-items: flex-end;
-  height: 140px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.chart-bar-group {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 100%;
-  justify-content: flex-end;
-  width: 60px;
-}
-
-.bar-fill {
-  width: 32px;
-  border-radius: 6px 6px 0 0;
-  transition: height 0.4s ease;
-  min-height: 4px;
-}
-
-.bar-udhaar {
-  background-color: #9333EA;
-}
-
-.bar-received {
-  background-color: #10B981;
-}
-
-.bar-label {
-  font-size: 12px;
+.chart-split-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: var(--bg-input);
   color: var(--text-muted);
-  margin-top: 8px;
+}
+
+.chart-subtitle-hint {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Horizontal Ratio Bar */
+.chart-ratio-bar-wrapper {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.chart-ratio-bar {
+  width: 100%;
+  height: 22px;
+  background: var(--bg-input);
+  border-radius: 8px;
+  display: flex;
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);
+}
+
+.ratio-segment {
+  height: 100%;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.ratio-udhaar {
+  background: linear-gradient(90deg, #9333EA, #A855F7);
+}
+
+.ratio-received {
+  background: linear-gradient(90deg, #10B981, #34D399);
 }
 
 .chart-legend {
   display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 16px;
+  justify-content: space-around;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border-color);
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .legend-item {
@@ -2118,13 +2349,495 @@ html, body {
 }
 
 .dot {
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
+  display: inline-block;
 }
 
 .dot-purple { background-color: #9333EA; }
 .dot-green { background-color: #10B981; }
+
+/* Activity Trend Bar Chart */
+.trend-bars-scroll-container {
+  width: 100%;
+  overflow-x: auto;
+  padding: 10px 0 6px 0;
+  scrollbar-width: thin;
+}
+
+.trend-bars-flex {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  min-height: 140px;
+  padding: 0 4px 8px 4px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.trend-bar-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 130px;
+  min-width: 42px;
+  flex: 1;
+}
+
+.trend-bar-duo {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 100px;
+  width: 100%;
+  justify-content: center;
+}
+
+.trend-bar-sub {
+  width: 14px;
+  min-height: 3px;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.4s ease;
+  position: relative;
+  cursor: pointer;
+}
+
+.trend-bar-sub.sub-udhaar {
+  background: #9333EA;
+}
+
+.trend-bar-sub.sub-received {
+  background: #10B981;
+}
+
+.trend-bar-sub:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.9);
+  color: #fff;
+  font-size: 10px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+  margin-bottom: 4px;
+}
+
+.trend-bar-date-label {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.trend-chart-legend {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding-top: 8px;
+}
+
+/* Sections in Reports (Top Debtors & Ledger) */
+.report-card-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.section-heading-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.section-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.section-icon {
+  font-size: 15px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.section-meta-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  background: var(--bg-input);
+  color: var(--text-muted);
+  border-radius: 12px;
+}
+
+/* Top Debtors List */
+.top-debtors-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.top-debtor-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--bg-app);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.top-debtor-card:hover {
+  background: var(--bg-card);
+  border-color: rgba(220, 38, 38, 0.3);
+  transform: translateX(2px);
+}
+
+.debtor-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.debtor-rank {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(220, 38, 38, 0.1);
+  color: #DC2626;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.debtor-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.debtor-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.debtor-phone {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.debtor-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.debtor-balance {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #DC2626;
+  text-align: right;
+}
+
+.btn-debtor-wa {
+  background: #25D366;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.btn-debtor-wa:hover {
+  transform: scale(1.1);
+}
+
+/* Report Ledger Controls & List */
+.rep-search-input-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.rep-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+}
+
+.rep-search-input {
+  width: 100%;
+  padding: 8px 12px 8px 36px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-input);
+  color: var(--text-main);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.rep-search-input:focus {
+  border-color: var(--color-primary);
+}
+
+.rep-ledger-filter-chips {
+  display: flex;
+  gap: 6px;
+}
+
+.report-transactions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.rep-tx-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--bg-app);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  transition: background 0.15s;
+}
+
+.rep-tx-item:hover {
+  background: var(--bg-card);
+}
+
+.rep-tx-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.rep-tx-icon-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.rep-tx-icon-badge.badge-is-udhaar {
+  background: rgba(147, 51, 234, 0.12);
+  color: #9333EA;
+}
+
+.rep-tx-icon-badge.badge-is-payment {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10B981;
+}
+
+.rep-tx-details {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.rep-tx-customer {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rep-tx-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  gap: 6px;
+}
+
+.rep-tx-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.rep-tx-amount {
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.rep-tx-amount.amount-udhaar {
+  color: #9333EA;
+}
+
+.rep-tx-amount.amount-payment {
+  color: #10B981;
+}
+
+/* Date Range Presets in Modal */
+.date-presets-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.btn-date-preset {
+  padding: 8px 6px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.btn-date-preset:hover, .btn-date-preset.active {
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* Print Only Styles */
+.print-only {
+  display: none !important;
+}
+
+@media print {
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  .app-viewport {
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  .app-container {
+    max-width: 100% !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* Hide app navigation and controls */
+  #bottom-nav,
+  .app-header,
+  .reports-filter-chips,
+  .report-date-banner .date-banner-action,
+  .report-actions-toolbar,
+  .report-ledger-controls,
+  .btn-debtor-wa,
+  .modal-backdrop,
+  .btn-icon,
+  #btn-fab-center,
+  .screen:not(#screen-reports) {
+    display: none !important;
+  }
+
+  #screen-reports {
+    display: block !important;
+    position: static !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .print-statement-header {
+    border-bottom: 2px solid #000;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+  }
+
+  .print-statement-header h2 {
+    font-size: 22px;
+    margin: 0 0 4px 0;
+    color: #000;
+  }
+
+  .print-statement-header p {
+    font-size: 13px;
+    margin: 0 0 8px 0;
+    color: #555;
+  }
+
+  .print-meta-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .summary-cards-row {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .summary-card {
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+
+  .report-chart-card,
+  .report-card-section {
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+    margin-bottom: 16px !important;
+  }
+
+  .report-transactions-list {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .rep-tx-item {
+    border: 1px solid #eee !important;
+    break-inside: avoid;
+  }
+}
 
 /* Settings Cards */
 .settings-section {

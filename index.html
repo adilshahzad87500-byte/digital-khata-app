@@ -169,27 +169,11 @@
           <div class="floating-hero-card" id="dash-net-banner">
             <div class="floating-card-badge-circle" id="dash-status-ring">
               <div class="ring-inner">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
-                </svg>
+                <span class="ring-currency-text">Rs.</span>
               </div>
             </div>
             <div class="floating-card-main-info">
-              <div class="floating-card-header">
-                <span class="floating-card-title" id="dash-net-status-label">Total Amount (Net Balance)</span>
-                <span class="hero-badge" id="dash-net-badge">Net Summary</span>
-              </div>
               <div class="floating-card-amount" id="dash-net-amount">Rs. 0</div>
-              <div class="floating-card-meta">
-                <span class="meta-tag tag-green" id="dash-progress-udhaar-label">Udhaar: Rs. 0</span>
-                <span class="meta-dot">•</span>
-                <span class="meta-tag tag-purple" id="dash-progress-received-label">Vasool: Rs. 0</span>
-              </div>
-            </div>
-            <div class="floating-card-arrow" id="btn-floating-card-details" data-target-screen="screen-reports" title="View Reports">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <polyline points="9 18 15 12 9 6"/>
-              </svg>
             </div>
           </div>
 
@@ -614,24 +598,62 @@
       <!-- ========================================== -->
       <section id="screen-reports" class="screen">
         <header class="app-header">
-          <h1 class="header-title">Reports</h1>
-          <button class="btn-icon" id="btn-reports-cal-icon" title="Filter Date">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-              <line x1="16" y1="2" x2="16" y2="6"/>
-              <line x1="8" y1="2" x2="8" y2="6"/>
-              <line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
-          </button>
+          <h1 class="header-title">Reports & Hisab</h1>
+          <div class="header-actions" style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn-icon" id="btn-reports-cal-icon" title="Filter Custom Date Range">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </button>
+            <button class="btn-icon" id="btn-reports-print-top" title="Print / PDF Statement">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+              </svg>
+            </button>
+          </div>
         </header>
 
         <div class="screen-body">
           <!-- Timeframe Chips -->
-          <div class="filter-chips">
-            <button class="chip active" data-report-time="today">Today</button>
+          <div class="filter-chips reports-filter-chips">
+            <button class="chip" data-report-time="today">Today</button>
             <button class="chip" data-report-time="week">This Week</button>
             <button class="chip" data-report-time="month">This Month</button>
-            <button class="chip" data-report-time="all">All Time</button>
+            <button class="chip" data-report-time="year">This Year</button>
+            <button class="chip active" data-report-time="all">All Time</button>
+            <button class="chip chip-custom-date" id="btn-chip-custom-date" data-report-time="custom">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              Custom
+            </button>
+          </div>
+
+          <!-- Active Date Range Banner -->
+          <div class="report-date-banner mt-2" id="rep-date-banner">
+            <div class="date-banner-left">
+              <span class="date-banner-icon">📅</span>
+              <span class="date-banner-text" id="rep-date-banner-label">Showing All Time Data</span>
+            </div>
+            <button class="date-banner-action" id="btn-banner-change-date">Change Range</button>
+          </div>
+
+          <!-- Printable Statement Header (Visible only on Print/PDF) -->
+          <div class="print-statement-header print-only">
+            <h2 id="print-biz-name">Digital Khata</h2>
+            <p id="print-biz-meta">Business Statement & Khata Report</p>
+            <div class="print-meta-row">
+              <span id="print-date-range">Period: All Time</span>
+              <span id="print-gen-date">Generated on: -</span>
+            </div>
           </div>
 
           <!-- Summary Cards Row -->
@@ -639,21 +661,70 @@
             <div class="summary-card card-purple">
               <span class="card-label">Total Udhaar</span>
               <span class="card-amount" id="rep-total-udhaar">Rs. 0</span>
+              <span class="card-subtext" id="rep-udhaar-count">0 entries</span>
             </div>
 
             <div class="summary-card card-green">
               <span class="card-label">Total Received</span>
               <span class="card-amount" id="rep-total-received">Rs. 0</span>
+              <span class="card-subtext" id="rep-received-count">0 entries</span>
             </div>
 
             <div class="summary-card card-yellow">
-              <span class="card-label">Remaining</span>
+              <span class="card-label">Remaining Net</span>
               <span class="card-amount" id="rep-remaining">Rs. 0</span>
+              <span class="card-subtext" id="rep-net-status">Settled</span>
             </div>
           </div>
 
+          <!-- Financial Recovery Health Card -->
+          <div class="report-health-card mt-3" id="rep-health-card">
+            <div class="health-header">
+              <div class="health-title-col">
+                <span class="health-label">Recovery / Collection Rate</span>
+                <span class="health-status-badge" id="rep-health-badge">100% Wasool</span>
+              </div>
+              <span class="health-percentage" id="rep-recovery-pct">100%</span>
+            </div>
+            <div class="health-progress-track">
+              <div class="health-progress-bar" id="rep-health-bar" style="width: 100%;"></div>
+            </div>
+            <div class="health-footer">
+              <span class="health-note" id="rep-health-note">Calculated from Wasool vs Udhaar ratio</span>
+              <span class="health-avg" id="rep-avg-tx">Avg: Rs. 0</span>
+            </div>
+          </div>
+
+          <!-- Quick Action Buttons Row (Print PDF, CSV, WhatsApp Share) -->
+          <div class="report-actions-toolbar mt-3">
+            <button class="report-btn-action btn-rep-print" id="btn-rep-print-action">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+              </svg>
+              <span>Print / PDF</span>
+            </button>
+
+            <button class="report-btn-action btn-rep-csv" id="btn-rep-csv-action">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Export CSV</span>
+            </button>
+
+            <button class="report-btn-action btn-rep-whatsapp" id="btn-rep-share-whatsapp">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.664-.699c.974.531 1.777.818 2.796.818 3.182 0 5.768-2.587 5.768-5.767 0-3.181-2.586-5.768-5.768-5.768zm3.393 8.358c-.144.405-.837.774-1.17.822-.312.043-.687.067-2.029-.488-1.579-.652-2.588-2.247-2.668-2.353-.077-.107-.639-.851-.639-1.624 0-.773.407-1.155.552-1.312.145-.157.318-.196.425-.196.107 0 .213.002.306.007.101.005.236-.039.369.281.144.347.491 1.196.534 1.284.043.088.072.19.014.304-.058.116-.087.188-.173.289l-.26.305c-.087.098-.177.204-.076.377.101.173.451.744.968 1.205.666.593 1.228.777 1.402.864.174.087.275.072.376-.044.102-.115.434-.505.549-.679.116-.174.232-.145.391-.087.159.058 1.011.477 1.184.564.173.087.289.13.332.203.043.072.043.419-.101.824z"/>
+              </svg>
+              <span>WhatsApp</span>
+            </button>
+          </div>
+
           <!-- Chart / Visual Container -->
-          <div class="report-content-box mt-4">
+          <div class="report-content-box mt-3">
             <!-- Empty state -->
             <div id="rep-empty-state" class="empty-state">
               <div class="empty-icon-wrapper">
@@ -663,27 +734,96 @@
                   <line x1="6" y1="20" x2="6" y2="14"/>
                 </svg>
               </div>
-              <h3 class="empty-title">No data available</h3>
-              <p class="empty-subtitle">Start adding transactions to see your reports here.</p>
+              <h3 class="empty-title">No transactions in this period</h3>
+              <p class="empty-subtitle">Select another timeframe or record transactions to see detailed insights.</p>
             </div>
 
-            <!-- Visual Bar Comparison Chart -->
-            <div id="rep-chart-wrapper" class="report-chart-card hidden">
-              <h3 class="chart-card-title">Udhaar vs Payment Comparison</h3>
-              <div class="chart-bars-container">
-                <div class="chart-bar-group">
-                  <div class="bar-fill bar-udhaar" id="bar-udhaar-fill" style="height: 0%;"></div>
-                  <span class="bar-label">Udhaar</span>
+            <!-- Charts & Content Wrapper -->
+            <div id="rep-charts-wrapper" class="hidden">
+              <!-- Visual Ratio Comparison Bar -->
+              <div id="rep-chart-wrapper" class="report-chart-card mb-3">
+                <div class="chart-header-row">
+                  <h3 class="chart-card-title">Udhaar vs Payment Ratio</h3>
+                  <span class="chart-split-badge" id="rep-chart-split-ratio">50% / 50%</span>
                 </div>
-                <div class="chart-bar-group">
-                  <div class="bar-fill bar-received" id="bar-received-fill" style="height: 0%;"></div>
-                  <span class="bar-label">Received</span>
+                <div class="chart-ratio-bar-wrapper">
+                  <div class="chart-ratio-bar">
+                    <div class="ratio-segment ratio-udhaar" id="rep-ratio-udhaar-fill" style="width: 50%;"></div>
+                    <div class="ratio-segment ratio-received" id="rep-ratio-received-fill" style="width: 50%;"></div>
+                  </div>
+                </div>
+                <div class="chart-legend">
+                  <div class="legend-item"><span class="dot dot-purple"></span> Udhaar: <strong id="rep-legend-udhaar">Rs. 0</strong></div>
+                  <div class="legend-item"><span class="dot dot-green"></span> Received: <strong id="rep-legend-received">Rs. 0</strong></div>
                 </div>
               </div>
-              <div class="chart-legend">
-                <div class="legend-item"><span class="dot dot-purple"></span> Total Udhaar</div>
-                <div class="legend-item"><span class="dot dot-green"></span> Total Received</div>
+
+              <!-- Activity Trend Chart -->
+              <div class="report-chart-card mb-3" id="rep-trend-chart-card">
+                <div class="chart-header-row">
+                  <div>
+                    <h3 class="chart-card-title" style="margin-bottom:2px;">Cash Flow Activity Trend</h3>
+                    <p class="chart-subtitle-hint" id="rep-trend-subtitle">Daily breakdown of Udhaar & Received</p>
+                  </div>
+                </div>
+                <div class="trend-bars-scroll-container">
+                  <div class="trend-bars-flex" id="rep-trend-bars-list">
+                    <!-- Dynamic Bars rendered here -->
+                  </div>
+                </div>
+                <div class="trend-chart-legend mt-2">
+                  <div class="legend-item"><span class="dot dot-purple"></span> Udhaar Given</div>
+                  <div class="legend-item"><span class="dot dot-green"></span> Payment Wasool</div>
+                </div>
               </div>
+
+              <!-- Top Due Customers (Sab se Zyada Baqaya Debtors) -->
+              <div class="report-card-section mb-3">
+                <div class="section-heading-row">
+                  <div class="section-title-wrap">
+                    <span class="section-icon">👥</span>
+                    <h3 class="section-title">Top Pending Debtors</h3>
+                  </div>
+                  <span class="section-meta-tag" id="rep-top-debtors-count">0 Customers</span>
+                </div>
+                <div class="top-debtors-list" id="rep-top-debtors-list">
+                  <!-- Dynamic Top Debtors rendered here -->
+                </div>
+              </div>
+
+              <!-- Period Transactions Ledger Breakdown -->
+              <div class="report-card-section mb-4">
+                <div class="section-heading-row">
+                  <div class="section-title-wrap">
+                    <span class="section-icon">📋</span>
+                    <h3 class="section-title">Period Ledger</h3>
+                  </div>
+                  <span class="section-meta-tag" id="rep-ledger-total-count">0 items</span>
+                </div>
+
+                <!-- Ledger Search & Type Filter Tabs -->
+                <div class="report-ledger-controls mt-2">
+                  <div class="rep-search-input-wrap">
+                    <svg class="rep-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="11" cy="11" r="8"/>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input type="text" id="rep-ledger-search" class="rep-search-input" placeholder="Search customer or description...">
+                  </div>
+
+                  <div class="filter-chips rep-ledger-filter-chips mt-2">
+                    <button class="chip active" data-rep-tx-type="all" id="chip-rep-tx-all">All</button>
+                    <button class="chip" data-rep-tx-type="udhaar" id="chip-rep-tx-udhaar">Udhaar Only</button>
+                    <button class="chip" data-rep-tx-type="payment" id="chip-rep-tx-payment">Payment Only</button>
+                  </div>
+                </div>
+
+                <!-- Ledger Transactions List -->
+                <div class="report-transactions-list mt-3" id="rep-transactions-list">
+                  <!-- Dynamic transactions rendered here -->
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
@@ -1622,6 +1762,47 @@
 
               <button type="submit" class="btn btn-primary btn-block mb-2">Reset Password & Unlock App</button>
               <button type="button" class="btn btn-secondary btn-block btn-close-modal">Cancel</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Custom Date Filter Modal for Reports -->
+      <div id="modal-custom-date-filter" class="modal-backdrop hidden">
+        <div class="modal-card">
+          <div class="modal-header">
+            <h3 class="modal-title">Select Date Range</h3>
+            <button class="btn-icon btn-close-modal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <!-- Preset Quick Range Buttons -->
+            <div class="form-group mb-3">
+              <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; display: block;">Quick Presets</label>
+              <div class="date-presets-grid">
+                <button type="button" class="btn-date-preset" data-preset="today">Today</button>
+                <button type="button" class="btn-date-preset" data-preset="yesterday">Yesterday</button>
+                <button type="button" class="btn-date-preset" data-preset="last7">Last 7 Days</button>
+                <button type="button" class="btn-date-preset" data-preset="last30">Last 30 Days</button>
+                <button type="button" class="btn-date-preset" data-preset="thisMonth">This Month</button>
+                <button type="button" class="btn-date-preset" data-preset="lastMonth">Last Month</button>
+              </div>
+            </div>
+
+            <form id="form-custom-date-filter" class="app-form">
+              <div class="form-group">
+                <label for="input-rep-start-date">Start Date (From)</label>
+                <input type="date" id="input-rep-start-date" required>
+              </div>
+
+              <div class="form-group">
+                <label for="input-rep-end-date">End Date (To)</label>
+                <input type="date" id="input-rep-end-date" required>
+              </div>
+
+              <div class="modal-actions-row mt-4" style="display: flex; gap: 10px;">
+                <button type="button" class="btn btn-secondary btn-close-modal" style="flex: 1;">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="flex: 2;">Apply Filter</button>
+              </div>
             </form>
           </div>
         </div>
